@@ -36,6 +36,22 @@ def balance(amounts, ions):
             balanced.append(a)
     return balanced
 
+def generate_recursive(ions, inlist, Ntot):
+    amounts = Span(ions, Ntot)
+    amounts = balance(amounts, list(ions.values()))
+    symbols = list(ions.keys())
+    names = []  
+
+    for amount in amounts: 
+        name = []
+        for s, n in zip(symbols, amount):
+            name.append(f'{s}{n}')
+
+        if ''.join(name) not in inlist:
+            names.append(''.join(name))
+  
+    return names
+
 def generate(ions, inlist, Ntot):
     ''' Lists all charge-ballanced quaternary compositions with Natoms < Ntot and not in inlist '''
     print (f'Generating candidate compositions with Natoms <= {Ntot}')
@@ -94,13 +110,16 @@ if __name__=="__main__":
     import time
     ions = {'Li':1, 'Zn':2, 'S':-2,'Cl':-1}
     #ions = {'Ba':2,'Nb':4,'Mg':2,'O':-2}
-    Ntot = 24
+    Ntot = 10
     compositions = []
     s = time.time()
     test1, test2 = generate(ions, compositions, Ntot)
     print('Loop time:', time.time()-s)
-
     s = time.time()
-    amounts = Span(ions, Ntot)
-    amounts = balance(amounts, list(ions.values()))
+    names = generate_recursive(ions, [], Ntot)
     print('Recursion time:', time.time()-s)
+
+    #assert len(names) == len(test2)
+    for i,t in enumerate(test2):
+      print (test2[t], names[i])
+    print(len(test2), len(names))
