@@ -119,13 +119,14 @@ class PhaseFieldBO(PhaseField):
 
     def print_results(self, log):
        arg = np.argsort(self.candidates_energies)
+       f = open(f'{log}', 'a')
        for c, e in zip(np.array(self.candidates)[arg], np.array(self.candidates_energies)[arg]):
-            print(c,e, file=log)
+            print(c,e, file=f)
        
        for s,e in zip(self.seeds, self.seeds_energy): 
-           print(self.dicfc[self.fcsym(s)][1], e, file=log) 
+           print(self.dicfc[self.fcsym(s)][1], e, f) 
 
        if self.mode == 'suggest':
            for n in self.next:
                key = f"{n[0]} {n[1]}"
-               print("next:", self.next_list[key], file=log)
+               print("next:", self.next_list[key], file=f)
