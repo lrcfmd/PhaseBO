@@ -1,0 +1,4 @@
+1) create df with [ names, pd_coord, fc_coord]
+so calculations can be done with pd_coord, while plotting on fc_coord:
+2) 2D square for quaternary phase fields - add check of this spacial case, when this plot appears 
+3) In results, print [formula, reduced(normalized) formula and its coeffiecients, ... energy]

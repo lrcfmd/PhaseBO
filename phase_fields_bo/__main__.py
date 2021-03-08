@@ -4,7 +4,7 @@ import pandas as pd
 from GPyOpt.methods import BayesianOptimization
 from phase_fields_bo.phase_field_bo import PhaseFieldBO
 
-def run(compositions, references, ions, mode, Ntot, seeds, disect, max_iter, log):
+def run(compositions, references, ions, mode, Ntot, seeds, max_iter, log):
     """ BO run """
     bopt = PhaseFieldBO(compositions,
                     references, 
@@ -12,8 +12,6 @@ def run(compositions, references, ions, mode, Ntot, seeds, disect, max_iter, log
                     mode, 
                     seeds,
                     exclude_zeros=True,
-                    n_seeds=9,
-                    disect=disect,
                     Ntot=Ntot,
                     max_iter=max_iter)
 
@@ -22,16 +20,18 @@ def run(compositions, references, ions, mode, Ntot, seeds, disect, max_iter, log
     convex = bopt.plot_convex()
     convex.show()
 
+    # --------- logtime
+    t = time.localtime()
+    timestamp = time.strftime('%b-%d-%Y_%H%M', t)
+    log = open(f"{log}-{timestamp}",'a')
+
     if mode == 'path':
-        bopt.plot_path()
+       # bopt.plot_path() -- to add {pd_coords: 2d_square_coords} for plotting on 2d square
         bopt.bo.plot_convergence()
         bopt.bo.plot_acquisition()
         bopt.print_results(log)
     elif mode == 'suggest':
-        bopt.plot_suggested()
-        t = time.localtime()
-        timestamp = time.strftime('%b-%d-%Y_%H%M', t)
-        log = open(f"{log}-{timestamp}",'a')
+       # bopt.plot_suggested() -- to add {pd_coords: 2d_square_coords} for plotting on 2d square
         bopt.print_results(log)
 
 if __name__ == '__main__':
@@ -44,11 +44,11 @@ if __name__ == '__main__':
                                           #               a composition with minimum E above convex hull
                                           #    'suggest': Calculates next best suggested compositions 
                                           # 
-    seeds = 'segmented'                   # Method to choose seeds in mode == 'path':
+    seeds = 'random'                      # Method to choose seeds in mode == 'path':
+                                          #    'random' seeds are selected randomly 
                                           #    'segmented': Seeds are picked from a segmented phase field.
-                                          #    'random' seeds are selected randomly - decreased efficiency 
+                                          #            Supports only phase fields represented as a square.
                                           # 
-    disect = 4                            # Number of sections of the phase field: disect x disect 
     N_atoms = 24                          # Maximum number of atoms in a unit cell in suggested compositions
     max_iter = 10                         # Evaluation budget for BO
     log = "logfile"                       # 
@@ -57,4 +57,4 @@ if __name__ == '__main__':
     references = df.values[195:]          #
 
 
-    run(compositions, references, ions, mode, N_atoms, seeds, disect, max_iter, log)
+    run(compositions, references, ions, mode, N_atoms, seeds, max_iter, log)

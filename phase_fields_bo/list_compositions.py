@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np	
 from itertools import product as P
+#from iteration_utilities import deepflatten
 from pymatgen.entries.computed_entries import ComputedEntry
 
 def initial(compositions_list):
@@ -49,7 +50,7 @@ def generate_recursive(ions, inlist, Ntot):
 
         if ''.join(name) not in inlist:
             names.append(''.join(name))
-  
+
     return names
 
 def generate(ions, inlist, Ntot):
@@ -96,30 +97,18 @@ def print_next(x_next, candidates, log):
         next_formula = candidates[x]
         print('next:', next_formula, file=open(log, 'a'))
 
-def unnest(amounts):
-    result = []
-    for i in amounts:
-        if isinstance(i,tuple):
-             result.extend(unnest(i))
-        else:
-             result.append(i)
-    return result
-
-
 if __name__=="__main__":
     import time
     ions = {'Li':1, 'Zn':2, 'S':-2,'Cl':-1}
     #ions = {'Ba':2,'Nb':4,'Mg':2,'O':-2}
-    Ntot = 10
+    Ntot = 24
     compositions = []
-    s = time.time()
+    s = time.time() 
     test1, test2 = generate(ions, compositions, Ntot)
-    print('Loop time:', time.time()-s)
-    s = time.time()
-    names = generate_recursive(ions, [], Ntot)
-    print('Recursion time:', time.time()-s)
-
-    #assert len(names) == len(test2)
-    for i,t in enumerate(test2):
-      print (test2[t], names[i])
-    print(len(test2), len(names))
+    print(f'Iteration: {time.time() - s}')
+    
+    s = time.time() 
+    dom, names = generate_recursive(ions, [], Ntot)
+    for n in names:
+        print(n)
+    print(f'Recursion: {time.time() - s}')

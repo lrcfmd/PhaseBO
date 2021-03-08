@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 from numpy.random import seed
+from pymatgen.analysis.phase_diagram import PhaseDiagram
 from GPyOpt.methods import BayesianOptimization
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -14,7 +15,6 @@ class PhaseFieldBO(PhaseField):
         self.ions = ions
         self.mode = mode
         self.iter = max_iter
-        self.domain = []
         self.seeds_type = seeds_type
         self.exclude = exclude_zeros
         self.n_seeds = n_seeds
@@ -49,7 +49,12 @@ class PhaseFieldBO(PhaseField):
             f = None
             X_init = self.candidates_fc
             Y_init = self.candidates_energies[:,None]
-            dom, self.next_list = list_compositions.generate(self.ions, self.formulas, self.Ntot)
+            #dom, self.next_list = list_compositions.generate(self.ions, self.formulas, self.Ntot)
+            next_formulas = list_compositions.generate_recursive(self.ions, self.formulas, self.Ntot)
+            dom, self.next_list = self.get_dom_phase(next_formulas) 
+            
+            print("Generated candidates")
+            print("example x_init point", dom[0])
             self.domain = [{'name': 'var_1', 'type': 'bandit', 'domain': dom}]
         else:
            raise ValueError(f'Unsupported mode: "{self.mode}". Supported modes are "path" or "suggest".') 
@@ -61,6 +66,16 @@ class PhaseFieldBO(PhaseField):
                                       evaluator_type = 'thompson_sampling',
                                       batch_size = self.batch,
                                       de_duplication = True)
+
+    def get_dom_phase(self, next_formulas):
+       """ Add generated formulas to the temporary phase field, so their pd_coordinates can be calculated """
+       next_entries, next_formulas = self.computed_compositions(next_formulas, 100*np.ones(len(next_formulas)))
+       tmp_pd = PhaseDiagram(self.computed_entries + next_entries)
+       next_coords = self.get_phase_coordinates(tmp_pd, next_formulas) 
+       next_dic = {self.fcsym(f) : name for f, name in zip(next_coords, next_formulas)}
+
+       return next_coords, next_dic 
+    
 
     def plot_path(self, online=False):
        """ segments considered points to seeds, observed and best.
@@ -118,8 +133,8 @@ class PhaseFieldBO(PhaseField):
 
 
     def print_results(self, log):
+       f = log
        arg = np.argsort(self.candidates_energies)
-       f = open(f'{log}', 'a')
        for c, e in zip(np.array(self.candidates)[arg], np.array(self.candidates_energies)[arg]):
             print(c,e, file=f)
        
@@ -128,5 +143,8 @@ class PhaseFieldBO(PhaseField):
 
        if self.mode == 'suggest':
            for n in self.next:
-               key = f"{n[0]} {n[1]}"
+               print(n)
+               key = self.fcsym(n) 
+               #key = f"{n[0]} {n[1]}" # for 2D square
+               print(self.next_list[key])
                print("next:", self.next_list[key], file=f)
