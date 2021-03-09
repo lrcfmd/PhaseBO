@@ -11,11 +11,10 @@ mode = 'path'                         # Modes for running BO:
                                       #               a composition with minimum E above convex hull
                                       #    'suggest': Calculates next best suggested compositions 
                                       # 
-seeds = 'segmented'                   # Method to choose seeds in mode == 'path':
-                                      #    'segmented': Seeds are picked from sections of the phase field.
-                                      #    'random' seeds are selected randomly - decreased efficiency 
+seeds = 'random'                      # Method to choose seeds in mode == 'path':
+                                      #    'random' seeds are selected randomly
+                                      #    'segmented': (redundant) Seeds are picked from sections of the phase field.
                                       # 
-disect = 4                            # Number of sections of the phase field: disect x disect 
 N_atom = 24                           # Maximum number of atoms per unit cell in suggested compositions
 max_iter = 10                         # Evaluation budget for BO
 
