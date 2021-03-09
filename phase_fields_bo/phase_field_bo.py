@@ -49,12 +49,10 @@ class PhaseFieldBO(PhaseField):
             f = None
             X_init = self.candidates_fc
             Y_init = self.candidates_energies[:,None]
-            #dom, self.next_list = list_compositions.generate(self.ions, self.formulas, self.Ntot)
-            next_formulas = list_compositions.generate_recursive(self.ions, self.formulas, self.Ntot)
+            next_formulas = list_compositions.generate(self.ions, self.formulas, self.Ntot)
             dom, self.next_list = self.get_dom_phase(next_formulas) 
             
             print("Generated candidates")
-            print("example x_init point", dom[0])
             self.domain = [{'name': 'var_1', 'type': 'bandit', 'domain': dom}]
         else:
            raise ValueError(f'Unsupported mode: "{self.mode}". Supported modes are "path" or "suggest".') 
@@ -75,7 +73,6 @@ class PhaseFieldBO(PhaseField):
        next_dic = {self.fcsym(f) : name for f, name in zip(next_coords, next_formulas)}
 
        return next_coords, next_dic 
-    
 
     def plot_path(self, online=False):
        """ segments considered points to seeds, observed and best.
@@ -133,13 +130,33 @@ class PhaseFieldBO(PhaseField):
 
 
     def print_results(self, log):
+       print(f"Writing results to the log-file...")
        f = log
        arg = np.argsort(self.candidates_energies)
+       print('All compositions:', file=f)
+       print('-----------------', file=f)
+       print('Composition     eV/atom above CH', file=f)
        for c, e in zip(np.array(self.candidates)[arg], np.array(self.candidates_energies)[arg]):
-            print(c,e, file=f)
+            print(c, round(e,2), file=f)
        
-       for s,e in zip(self.seeds, self.seeds_energy): 
-           print(self.dicfc[self.fcsym(s)][1], e, f) 
+       if self.mode == 'path':
+           observed = [x for x in self.bo.X] 
+           en_observed = np.array([self.dicfc[self.fcsym(x)][0] for x in observed])
+           names = [self.dicfc[self.fcsym(x)][1] for x in observed]
+
+           pf = '-'.join(self.elements)
+           with open(f'BO_Path_in_{pf}.txt', 'a') as f:
+              print('Seeds:', file=f)
+              print('------', file=f)
+              print('Composition     eV/atom above CH', file=f)
+              for s,e in zip(self.nseeds, self.nseeds_energy): 
+                  print(self.dicfc[self.fcsym(s)][1], round(e,2), file=f)
+              print()
+              print('BO Path:', file=f)
+              print('--------', file=f) 
+              print('Composition     eV/atom above CH', file=f)
+              for n, e in zip(names, en_observed):
+                  print(n, round(e,2), file=f)
 
        if self.mode == 'suggest':
            for n in self.next:

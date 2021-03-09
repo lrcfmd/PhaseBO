@@ -39,7 +39,7 @@ if __name__ == '__main__':
     ifile = 'LiSnSCl_700eV.csv'           # File with compositions and total enthalpies
     ions = {'Li':1,'Sn':4,'S':-2,'Cl':-1} # Ions and oxidation states
                                           # 
-    mode = 'suggest'                         # Modes for running BO:
+    mode = 'path'                         # Modes for running BO:
                                           #    'path':    Calculates a would-be-BO-path towards 
                                           #               a composition with minimum E above convex hull
                                           #    'suggest': Calculates next best suggested compositions 
