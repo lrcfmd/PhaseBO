@@ -13,13 +13,13 @@ mode = 'path'                         # Modes for running BO:
                                       # 
 seeds = 'random'                      # Method to choose seeds in mode == 'path':
                                       #    'random' seeds are selected randomly
-                                      #    'segmented': (redundant) Seeds are picked from sections of the phase field.
+                                      #    'segmented': (deprecated) seeds are picked from sections of the phase field.
                                       # 
 N_atom = 24                           # Maximum number of atoms per unit cell in suggested compositions
 max_iter = 10                         # Evaluation budget for BO
 
 #------------- READ -----------------
-log = "logfile"                       # Name of the file, where results will be printed 
+log = "logfile"                       # Name of the file, where results will be printed with a timestamp
 df = pd.read_csv(ifile, header=0)     #  
 compositions = df.values              # Select candidate and reported compositions
 references = df.values[195:]          #
@@ -30,4 +30,4 @@ plot_mode = 'screen'                  # Select plotting mode: 'web' creates inte
 
 #------------- RUN -----------------  # You shouldn't need to modify run or anything in phase_fields_bo/ folder
 
-run(compositions, references, ions, mode, N_atom, seeds, disect, max_iter, log)
+run(compositions, references, ions, mode, N_atom, seeds, max_iter, log)
