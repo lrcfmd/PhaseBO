@@ -33,14 +33,13 @@ class PhaseFieldBO(PhaseField):
             self.next = self.bo.suggest_next_locations()
 
     def setBO(self):
-        if self.seeds_type == 'random':
-            self.nseeds, self.nseeds_energy = self.get_random_seeds(self.n_seeds, self.exclude)
-        elif self.seeds_type == 'segmented':
-            self.nseeds, self.nseeds_energy = self.get_seeds_from_segments(self.disect, self.exclude)
-        else:
-            raise ValueError(f'Unsupported seeds_type: "{self.seeds_type}". Supported seeds_type are "random" or "segmented"')
- 
         if self.mode == 'path':
+            if self.seeds_type == 'random':
+                self.nseeds, self.nseeds_energy = self.get_random_seeds(self.n_seeds, self.exclude)
+            elif self.seeds_type == 'segmented':
+                self.nseeds, self.nseeds_energy = self.get_seeds_from_segments(self.disect, self.exclude)
+            else:
+                raise ValueError(f'Unsupported seeds_type: "{self.seeds_type}". Supported seeds_type are "random" or "segmented"')
             f = self.f
             X_init = self.nseeds
             Y_init = self.nseeds_energy[:,None]
