@@ -10,8 +10,8 @@ import list_compositions
 
 class PhaseFieldBO(PhaseField):
 
-    def __init__(self, compositions, references, ions, mode, seeds_type, exclude_zeros=False, n_seeds=9, disect=3, Ntot=24, max_iter=10, batch=4):
-        super().__init__(compositions, references, ions)  
+    def __init__(self, compositions, references, ions, mode, seeds_type, exclude_zeros=False, n_seeds=9, disect=3, Ntot=24, max_iter=10, batch=4, allow_negative=False):
+        super().__init__(compositions, references, ions, allow_negative)  
         self.ions = ions
         self.mode = mode
         self.iter = max_iter
@@ -114,6 +114,7 @@ class PhaseFieldBO(PhaseField):
            mpld3.show()
 
     def plot_suggested(self, online=False):
+        """ works only for 2D square plot with x = C1/(C1+C2) and y = A1/(A1+A2) """
         fig, ax = plt.subplots()
         sconv = self.plot_convex()
         sconv.scatter(self.next[:,0], self.next[:,1], c='lime', label='suggested next')

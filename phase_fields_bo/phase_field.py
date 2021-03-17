@@ -11,7 +11,7 @@ class PhaseField:
     segments the field into dxd sections and select seeds in them,
     defines a function of Potential energy surface for Bayesian Optimisation"""
 
-    def __init__(self, compositions, references, ions):
+    def __init__(self, compositions, references, ions, allow_negative=False):
         self.compositions = compositions[:,0]
         self.enthalpies = compositions[:,1]
         self.references = list(references[:,0])
@@ -23,7 +23,7 @@ class PhaseField:
         self.seeds = []
         self.seeds_energy = []
         # for each instance of a phase field:
-        self.compute_convex()
+        self.compute_convex(allow_negative)
         self.pd_coords = self.get_phase_coordinates(self.pd, self.formulas)
         self.create_dict()
         self.create_dicfc()
@@ -44,16 +44,25 @@ class PhaseField:
             formulas.append(ce.composition)
         return structures, formulas
 
-    def compute_convex(self):
+    def compute_convex(self, allow_negative=False):
         """ Calculates energies above the convex hull (meV/atom)
         for all compositions, including references. 
-        Rewrites energies"""
+        If allow_negative: associates energy below the hull with stable compositions"""
+     
         print ("Computing energies above convex hull...") 
         self.computed_entries, self.formulas = self.computed_compositions(self.compositions, self.enthalpies)
         self.pd = PhaseDiagram(self.computed_entries)
         energies_list = []
         for entry in self.computed_entries:
-            energies_list.append(1000*self.pd.get_e_above_hull(entry))
+            hull_energy = 1000*self.pd.get_e_above_hull(entry)
+            if allow_negative and hull_energy == 0:
+                try:
+                    energies_list.append(1000*self.pd.get_equilibrium_reaction_energy(entry))
+                except:
+                    print(f"Exception: {entry.composition}, {entry.energy}, {hull_energy}")
+                    energies_list.append(hull_energy)
+            else:
+                energies_list.append(hull_energy)
         self.energies = np.array(energies_list)
 
     @staticmethod
@@ -191,10 +200,10 @@ if __name__ == "__main__":
     compositions = df.values              # Select candidate and reported compositions
     references = df.values[195:]          #
 
-    pf = PhaseField(compositions, references, ions)
+    pf = PhaseField(compositions, references, ions, allow_negative=False)
     coords = pf.pd_coords
-    for i, c in enumerate(coords):
-        print(pf.formulas[i], c) 
+    #for i, c in enumerate(coords):
+    #    print(pf.formulas[i], c) 
 
     plot = pf.plot_convex() 
     plot.show()
