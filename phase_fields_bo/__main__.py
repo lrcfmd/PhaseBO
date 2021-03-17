@@ -34,6 +34,8 @@ def run(compositions, references, ions, mode, Ntot, seeds, max_iter, log):
        # bopt.plot_suggested() -- to add {pd_coords: 2d_square_coords} for plotting on 2d square
         bopt.print_results(log)
 
+    return bopt
+
 if __name__ == '__main__':
     
     ifile = 'LiSnSCl_700eV.csv'           # File with compositions and total enthalpies
