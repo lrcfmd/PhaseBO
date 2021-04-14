@@ -10,7 +10,7 @@ import list_compositions
 
 class PhaseFieldBO(PhaseField):
 
-    def __init__(self, compositions, references, ions, mode, seeds_type, exclude_zeros=False, n_seeds=9, disect=3, Ntot=24, max_iter=10, batch=4, allow_negative=False):
+    def __init__(self, compositions, references, ions, mode, seeds_type, next_formulas=None, exclude_zeros=False, n_seeds=9, disect=3, Ntot=24, max_iter=10, batch=4, allow_negative=False):
         super().__init__(compositions, references, ions, allow_negative)  
         self.ions = ions
         self.mode = mode
@@ -18,18 +18,14 @@ class PhaseFieldBO(PhaseField):
         self.seeds_type = seeds_type
         self.exclude = exclude_zeros
         self.n_seeds = n_seeds
-        self.nseeds = []
-        self.nseeds_energy = []
         self.disect = disect
         self.Ntot = Ntot
         self.batch = batch
-        self.bo = 0
-        self.next = []
-        self.next_list = {}
+        self.next_formulas = next_formulas
         self.setBO()
         if self.mode == 'path':
             self.bo.run_optimization(self.iter, verbosity=False)
-        else:
+        elif self.mode == 'suggest':
             self.next = self.bo.suggest_next_locations()
 
     def setBO(self):
@@ -44,19 +40,30 @@ class PhaseFieldBO(PhaseField):
             X_init = self.nseeds
             Y_init = self.nseeds_energy[:,None]
             self.domain = [{'name': 'var_1', 'type': 'bandit', 'domain': self.candidates_fc}]
+
         elif self.mode == 'suggest':
             f = None
             X_init = self.candidates_fc
             Y_init = self.candidates_energies[:,None]
-            next_formulas = list_compositions.generate(self.ions, self.formulas, self.Ntot)
-            dom, self.next_list = self.get_dom_phase(next_formulas) 
-            
-            print("Generated candidates")
+            if not self.next_formulas:
+                print("Generating candidate compositions ...")
+                self.next_formulas = list_compositions.generate(self.ions, self.formulas, self.Ntot)
+                for f in self.next_formulas: print (f)
+
+            dom, self.next_list = self.get_dom_phase()
             self.domain = [{'name': 'var_1', 'type': 'bandit', 'domain': dom}]
+
+        elif self.mode == 'generate':
+                self.next_formulas = list_compositions.generate(self.ions, self.formulas, self.Ntot)
+                with open("candidates_list.csv",'a') as cl:
+                    for f in self.next_formulas:
+                        print(f, file=cl)
+
         else:
            raise ValueError(f'Unsupported mode: "{self.mode}". Supported modes are "path" or "suggest".') 
 
-        self.bo = BayesianOptimization(f=f,
+        if self.mode != 'generate':
+            self.bo = BayesianOptimization(f=f,
                                       domain=self.domain,
                                       X = X_init,
                                       Y = Y_init,
@@ -64,9 +71,9 @@ class PhaseFieldBO(PhaseField):
                                       batch_size = self.batch,
                                       de_duplication = True)
 
-    def get_dom_phase(self, next_formulas):
+    def get_dom_phase(self):
        """ Add generated formulas to the temporary phase field, so their pd_coordinates can be calculated """
-       next_entries, next_formulas = self.computed_compositions(next_formulas, 100*np.ones(len(next_formulas)))
+       next_entries, next_formulas = self.computed_compositions(self.next_formulas, 100*np.ones(len(self.next_formulas)))
        tmp_pd = PhaseDiagram(self.computed_entries + next_entries)
        next_coords = self.get_phase_coordinates(tmp_pd, next_formulas) 
        next_dic = {self.fcsym(f) : name for f, name in zip(next_coords, next_formulas)}

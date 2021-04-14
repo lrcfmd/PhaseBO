@@ -1,10 +1,11 @@
+import sys
 import time
 import numpy as np
 import pandas as pd
 from GPyOpt.methods import BayesianOptimization
 from phase_fields_bo.phase_field_bo import PhaseFieldBO
 
-def run(compositions, references, ions, mode, Ntot, seeds, max_iter, log, allow_negative=False):
+def run(compositions, references, ions, mode, Ntot, seeds, max_iter, log, next_formulas=None, allow_negative=False):
     """ BO run """
     bopt = PhaseFieldBO(compositions,
                     references, 
@@ -14,6 +15,7 @@ def run(compositions, references, ions, mode, Ntot, seeds, max_iter, log, allow_
                     exclude_zeros=True,
                     Ntot=Ntot,
                     max_iter=max_iter,
+                    next_formulas=next_formulas,
                     allow_negative=allow_negative)
 
     # --------- PLOT & PRINT -------------
@@ -42,7 +44,7 @@ if __name__ == '__main__':
     ifile = 'LiSnSCl_700eV.csv'           # File with compositions and total enthalpies
     ions = {'Li':1,'Sn':4,'S':-2,'Cl':-1} # Ions and oxidation states
                                           # 
-    mode = 'path'                         # Modes for running BO:
+    mode = 'suggest'                         # Modes for running BO:
                                           #    'path':    Calculates a would-be-BO-path towards 
                                           #               a composition with minimum E above convex hull
                                           #    'suggest': Calculates next best suggested compositions 
@@ -58,6 +60,7 @@ if __name__ == '__main__':
     df = pd.read_csv(ifile, header=0)     #  
     compositions = df.values              # Select candidate and reported compositions
     references = df.values[195:]          #
+    candidatesf = 'candidates_list.csv'
+    next_formulas = [i[0].strip() for i in pd.read_csv(candidatesf).values]
 
-
-    run(compositions, references, ions, mode, N_atoms, seeds, max_iter, log, allow_negative=False)
+    run(compositions, references, ions, mode, N_atoms, seeds, max_iter, log, next_formulas=None, allow_negative=False)

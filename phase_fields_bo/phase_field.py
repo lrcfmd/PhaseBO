@@ -183,12 +183,13 @@ class PhaseField:
 
         fig,ax =plt.subplots()
         plt.contourf(xnew, ynew, znew, 50, cmap=cm.gist_heat)
-        plt.colorbar()
-        plt.scatter(data[:,0], data[:,1], c='cyan', marker='3', lw=0.5, label='Computed compositions')
+        cbar = plt.colorbar()
+        cbar.set_label('Energy w.r.t. convex hull, meV/atom', fontsize=14)
+        plt.scatter(data[:,0], data[:,1], c='lime', marker='3', lw=1.5, label='Computed compositions')
         plt.axis([0,1.,0,1.])
         plt.xlabel(f'{self.elements[0]}/({self.elements[0]}+{self.elements[1]})', fontsize=14)
         plt.ylabel(f'{self.elements[2]}/({self.elements[2]}+{self.elements[3]})', fontsize=14)
-        ax.legend(bbox_to_anchor=(0.5, 1.0),fontsize=10)
+        ax.legend(bbox_to_anchor=(0.5, 1.1),fontsize=10)
         return plt
 
 if __name__ == "__main__":

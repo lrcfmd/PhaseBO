@@ -3,10 +3,10 @@ import pandas as pd
 
 #------------- INPUT ---------------
 
-ifile = 'LiSnSCl_700eV.csv'           # File with compositions and total enthalpies
-ions = {'Li':1,'Sn':4,'S':-2,'Cl':-1} # Ions and oxidation states
+ifile = 'LiSiSF_xtalopt.csv'         # File with compositions and total enthalpies
+ions = {'Li':1,'Si':4,'S':-2,'F':-1} # Ions and oxidation states
                                       # 
-mode = 'path'                         # Modes for running BO:
+mode = 'suggest'                         # Modes for running BO:
                                       #    'path':    Calculates a would-be-BO-path towards 
                                       #               a composition with minimum E above convex hull
                                       #    'suggest': Calculates next best suggested compositions 
@@ -22,7 +22,7 @@ max_iter = 10                         # Evaluation budget for BO
 log = "logfile"                       # Name of the file, where results will be printed with a timestamp
 df = pd.read_csv(ifile, header=0)     #  
 compositions = df.values              # Select candidate and reported compositions
-references = df.values[195:]          #
+references = df.values[22:]          #
 
 #------------- PLOT ----------------
 plot_mode = 'screen'                  # Select plotting mode: 'web' creates interactive plot in a browser
