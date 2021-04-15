@@ -4,12 +4,16 @@ import pandas as pd
 #------------- INPUT ---------------
 
 ifile = 'LiSnSCl_700eV.csv'           # File with compositions and total enthalpies
+cfile = 'candidates_list.csv'         # File with candidate compositions;
+                                      # if not provided (default), the candidates will be generated automatically
+                                      # 
 ions = {'Li':1,'Sn':4,'S':-2,'Cl':-1} # Ions and oxidation states
                                       # 
 mode = 'path'                         # Modes for running BO:
-                                      #    'path':    Calculates a would-be-BO-path towards 
-                                      #               a composition with minimum E above convex hull
-                                      #    'suggest': Calculates next best suggested compositions 
+                                      #    'path':     Calculates a would-be-BO-path towards 
+                                      #                a composition with minimum E above convex hull
+                                      #    'suggest':  Calculates next best suggested compositions 
+                                      #    'generate': Generates a list of candidate compositions
                                       # 
 seeds = 'random'                      # Method to choose seeds in mode == 'path':
                                       #    'random' seeds are selected randomly
@@ -23,11 +27,16 @@ log = "logfile"                       # Name of the file, where results will be 
 df = pd.read_csv(ifile, header=0)     #  
 compositions = df.values              # Select candidate and reported compositions
 references = df.values[195:]          #
+                                      # Read candidate compositions file if provided
+try:
+    next_formulas = [i[0] for i in pd.read_csv(cfile).values]
+except Exception:
+    next_formulas = None
 
 #------------- PLOT ----------------
-plot_mode = 'screen'                  # Select plotting mode: 'web' creates interactive plot in a browser
+plot_mode = 'screen'                  # Select plotting mode: 'web' creates interactive plot in a browser (deprecated)
                                       # 'screen' (default) plots on a screen. 
 
-#------------- RUN -----------------  # You shouldn't need to modify run or anything in phase_fields_bo/ folder
+#------------- RUN -----------------  # You shouldn't need to modify run function call or anything in phase_fields_bo/ folder
 
-run(compositions, references, ions, mode, N_atom, seeds, max_iter, log, allow_negative=False)
+run(compositions, references, ions, mode, N_atom, seeds, max_iter, log, next_formulas=next_formulas, allow_negative=False)

@@ -4,8 +4,8 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-setup(name='phase_fields_bo',
-      version='1.0',
+setup(name='phasebo',
+      version='0.1.1',
       description='Bayesian optimisation for accelerated exploration of phase fields',
       url='http://github.com/DrewNow/PhaseFieldsBO',
       author='Andrij Vasylenko',
