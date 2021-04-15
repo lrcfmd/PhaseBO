@@ -5,8 +5,8 @@ from pymatgen.analysis.phase_diagram import PhaseDiagram
 from GPyOpt.methods import BayesianOptimization
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from phase_field import PhaseField
-import list_compositions
+from phasebo.phase_field import PhaseField
+from phasebo.list_compositions import generate
 
 class PhaseFieldBO(PhaseField):
 
@@ -47,7 +47,7 @@ class PhaseFieldBO(PhaseField):
             Y_init = self.candidates_energies[:,None]
             if not self.next_formulas:
                 print("Generating candidate compositions ...")
-                self.next_formulas = list_compositions.generate(self.ions, self.formulas, self.Ntot)
+                self.next_formulas = generate(self.ions, self.formulas, self.Ntot)
                 for f in self.next_formulas: print (f)
 
             dom, self.next_list = self.get_dom_phase()
@@ -55,7 +55,7 @@ class PhaseFieldBO(PhaseField):
 
         elif self.mode == 'generate':
                 print("Generating candidate compositions, writing to candidates_list.csv")
-                self.next_formulas = list_compositions.generate(self.ions, self.formulas, self.Ntot)
+                self.next_formulas = generate(self.ions, self.formulas, self.Ntot)
                 with open("candidates_list.csv",'a') as cl:
                     for f in self.next_formulas:
                         print(f, file=cl)
