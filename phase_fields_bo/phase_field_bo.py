@@ -54,6 +54,7 @@ class PhaseFieldBO(PhaseField):
             self.domain = [{'name': 'var_1', 'type': 'bandit', 'domain': dom}]
 
         elif self.mode == 'generate':
+                print("Generating candidate compositions, writing to candidates_list.csv")
                 self.next_formulas = list_compositions.generate(self.ions, self.formulas, self.Ntot)
                 with open("candidates_list.csv",'a') as cl:
                     for f in self.next_formulas:
