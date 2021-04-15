@@ -72,5 +72,5 @@ algorithm.
 *ions*   | (default: {'Li':1,'Sn':4,'S':-2,'Cl':-1}) Ions and oxidation states.
 *seeds*  | (default: 'segmented') Method to choose seeds in mode == 'path': 'segmented': Seeds are picked from a segmented phase field. 'random' seeds are selected randomly - decreased efficiency. 
 *disect* | (default: 4) Number of sections of the phase field (disect x disect), from which the 'segmented' seeds are selected.
-*N_atom* | (default: 24) Maximum number of atoms per unit cell in suggested compositions (in 'suggest' mode)
+*N_atom* | (default: 24) Maximum number of atoms per unit cell in suggested compositions (in 'suggest' and 'generate' modes)
 *max_iter* | (default: 10) Maximum number of iterations. 
