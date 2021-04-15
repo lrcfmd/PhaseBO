@@ -35,7 +35,9 @@ GpyOpt
 Dependencies can be installed automatically during installation.
 
 ## Installation
-`pip install --user .`
+`pip install phasebo`
+or from the source:
+`pip install .`
 
 ## Usage
 1) Prepare a 2-column table, where each row has a composition 
