@@ -2,4 +2,8 @@ __pycache__/
 sandbo/
 test_clean/
 test_zeng/
-logfile
+logfile*
+TODO
+_input.py
+LiSiSF_xtalopt.csv
+lisisf_input.py

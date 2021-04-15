@@ -1,4 +1,4 @@
-from phase_fields_bo.__main__ import run
+from phasebo.__main__ import run
 import pandas as pd
 
 #------------- INPUT ---------------
