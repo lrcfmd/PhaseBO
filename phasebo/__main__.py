@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from GPyOpt.methods import BayesianOptimization
-from phase_fields_bo.phase_field_bo import PhaseFieldBO
+from phasebo.phase_field_bo import PhaseFieldBO
 
 def run(compositions, references, ions, mode, Ntot, seeds, max_iter, log, next_formulas=None, allow_negative=False):
     """ BO run """
