@@ -19,10 +19,16 @@ seeds = 'random'                      # Method to choose seeds in mode == 'path'
                                       #    'random' seeds are selected randomly
                                       #    'segmented': (deprecated) seeds are picked from sections of the phase field.
                                       # 
+limits = {'Li': [1, 10],              # Min and max limits on amounts of atoms of each atomic element 
+          'Sn': [1, 5],               # the limits will be used when candidates are generated in 'suggest' and 'generate' 
+           'S': [1, 10],              # modes.
+          'Cl': [1, 5]                # If limits are not specified (default), all charge-balanced compositions will be generated
+         }                            #
 N_atom = 24                           # Maximum number of atoms per unit cell in suggested compositions
 max_iter = 10                         # Evaluation budget for BO
-
-#------------- READ -----------------
+                                      # 
+                                      # 
+#------------- READ ----------------- #
 log = "logfile"                       # Name of the file, where results will be printed with a timestamp
 df = pd.read_csv(ifile, header=0)     #  
 compositions = df.values              # Select candidate and reported compositions

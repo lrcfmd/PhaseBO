@@ -1,0 +1,4 @@
+numpy
+GPyOpt
+pandas
+pymatgen

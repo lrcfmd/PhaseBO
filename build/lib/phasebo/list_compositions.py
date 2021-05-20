@@ -12,11 +12,8 @@ def initial(compositions_list):
     energies = [float(i.split()[1]) for i in c_list]
     return compositions, energies
 
-def span(ions, Ntot, limits=None):
-    if limits:
-        amounts = [np.arange(limits[i][0], limits[i][1]) for i in ions]
-    else:
-        amounts = [np.arange(1,Ntot+1) for i in ions]
+def span(ions, Ntot):
+    amounts = [np.arange(1,Ntot+1) for i in ions]
     PP = list(P(*amounts))    
     return [i for i in PP if sum(i) <= Ntot]
 
@@ -27,8 +24,8 @@ def balance(amounts, ions):
             balanced.append(a)
     return balanced
 
-def generate(ions, inlist, Ntot, limits):
-    amounts = span(ions, Ntot, limits)
+def generate(ions, inlist, Ntot):
+    amounts = span(ions, Ntot)
     amounts = balance(amounts, list(ions.values()))
     symbols = list(ions.keys())
     names = []  

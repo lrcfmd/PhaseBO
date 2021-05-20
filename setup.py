@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='phasebo',
-      version='0.1.1',
+      version='0.1.3.1',
       description='Bayesian optimisation for accelerated exploration of phase fields',
       url='http://github.com/DrewNow/PhaseFieldsBO',
       author='Andrij Vasylenko',
@@ -15,5 +15,5 @@ setup(name='phasebo',
       install_requires=['numpy', 'GPyOpt', 'pandas', 'pymatgen'],
       python_requires='>=3.7, <3.9',
       include_package_data=True,
-      entry_points={"console_scripts": ["phase_fields_bo=phase_fields_bo.__main__:run"]},  
+      entry_points={"console_scripts": ["phasebo=phasebo.__main__:run"]},  
       zip_safe=False)

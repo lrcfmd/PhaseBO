@@ -4,7 +4,7 @@
 
 ## Functionality
 
-There are two modes of running the code:
+The modes of running the code are:
 
 1) mode = 'path' can calculate a 'would-be' Bayesian Optimisation path
 for the previously calculated compositions in the phase field
@@ -12,7 +12,8 @@ for the previously calculated compositions in the phase field
 2) mode = 'suggest' suggests new compositions for calculations,
 based on the precomputed results.
 
-This version of the code supports quaternary systems only.
+3) mode = 'generate' generates the list of candidate compositions that can be edited and further used
+for limiting the candidates to the particular compositions only in a subsequent run in 'suggest' mode
 
 ## Requirements
 

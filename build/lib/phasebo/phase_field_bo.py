@@ -10,22 +10,7 @@ from phasebo.list_compositions import generate
 
 class PhaseFieldBO(PhaseField):
 
-    def __init__(self,
-                 compositions,
-                 references, 
-                 ions,
-                 mode,
-                 seeds_type,
-                 next_formulas=None,
-                 exclude_zeros=False,
-                 n_seeds=9,
-                 disect=3,
-                 Ntot=24,
-                 limits=None,
-                 max_iter=10, 
-                 batch=4,
-                 allow_negative=False):
-
+    def __init__(self, compositions, references, ions, mode, seeds_type, next_formulas=None, exclude_zeros=False, n_seeds=9, disect=3, Ntot=24, max_iter=10, batch=4, allow_negative=False):
         super().__init__(compositions, references, ions, allow_negative)  
         self.ions = ions
         self.mode = mode
@@ -35,7 +20,6 @@ class PhaseFieldBO(PhaseField):
         self.n_seeds = n_seeds
         self.disect = disect
         self.Ntot = Ntot
-        self.limits = limits
         self.batch = batch
         self.next_formulas = next_formulas
         self.setBO()
@@ -63,7 +47,7 @@ class PhaseFieldBO(PhaseField):
             Y_init = self.candidates_energies[:,None]
             if not self.next_formulas:
                 print("Generating candidate compositions ...")
-                self.next_formulas = generate(self.ions, self.formulas, self.Ntot, self.limits)
+                self.next_formulas = generate(self.ions, self.formulas, self.Ntot)
                 for f in self.next_formulas: print (f)
 
             dom, self.next_list = self.get_dom_phase()
@@ -71,13 +55,13 @@ class PhaseFieldBO(PhaseField):
 
         elif self.mode == 'generate':
                 print("Generating candidate compositions, writing to candidates_list.csv")
-                self.next_formulas = generate(self.ions, self.formulas, self.Ntot, self.limits)
+                self.next_formulas = generate(self.ions, self.formulas, self.Ntot)
                 with open("candidates_list.csv",'a') as cl:
                     for f in self.next_formulas:
                         print(f, file=cl)
 
         else:
-           raise ValueError(f'Unsupported mode: "{self.mode}". Supported modes are "path", "suggest" or "generate".') 
+           raise ValueError(f'Unsupported mode: "{self.mode}". Supported modes are "path" or "suggest".') 
 
         if self.mode != 'generate':
             self.bo = BayesianOptimization(f=f,
