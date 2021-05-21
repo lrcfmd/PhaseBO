@@ -92,10 +92,10 @@ class PhaseFieldBO(PhaseField):
        """ Add generated formulas to the temporary phase field, so their pd_coordinates can be calculated """
        next_entries, next_formulas = self.computed_compositions(self.next_formulas, 100*np.ones(len(self.next_formulas)))
        tmp_pd = PhaseDiagram(self.computed_entries + next_entries)
-       next_coords = self.get_phase_coordinates(tmp_pd, next_formulas) 
-       next_dic = {self.fcsym(f) : name for f, name in zip(next_coords, next_formulas)}
+       self.next_coords = self.get_phase_coordinates(tmp_pd, next_formulas) 
+       next_dic = {self.fcsym(f) : name for f, name in zip(self.next_coords, next_formulas)}
 
-       return next_coords, next_dic 
+       return self.next_coords, next_dic 
 
     def plot_path(self, online=False):
        """ segments considered points to seeds, observed and best.
@@ -193,8 +193,8 @@ class PhaseFieldBO(PhaseField):
     def get_uncertainty(self, log, mesh=None):
         """ prints varience of surrogate function """
         
-        # for a dense mesh - works for 3 components only 
         if mesh: 
+            # for a dense mesh - works for 3 components only 
             bounds = self.bo.acquisition.space.get_bounds()
             X1 = np.linspace(bounds[0][0], bounds[0][1], mesh)
             X2 = np.linspace(bounds[1][0], bounds[1][1], mesh)
@@ -202,21 +202,21 @@ class PhaseFieldBO(PhaseField):
             x1, x2, x3 = np.meshgrid(X1, X2, X3)
             X = np.hstack((x1.reshape(mesh**3,1),x2.reshape(mesh**3,1),x3.reshape(mesh**3,1))) 
         else:
-        # for all candidate compositions
-            X = self.candidates_fc
+            # for all next candidate compositions
+            X = self.next_coords
         
         model = self.bo.model
-        _, varience = model.predict(self.candidates_fc)
+        mean, varience = model.predict(X)
+
         maxvar = np.argmax(varience)
         minvar = np.argmin(varience)
-        uncertain = self.candidates[maxvar]
-        certain = self.candidates[minvar]
-        uncertain_f = self.fcsym(self.candidates_fc[maxvar])
-        certain_f = self.fcsym(self.candidates_fc[minvar])
-        uncertain_e = round(self.dicfc[uncertain_f][0], 1)
-        certain_e = round(self.dicfc[certain_f][0], 1)
+
+        uncertain = self.next_formulas[maxvar]
+        uncertain_e = round(mean[maxvar][0],1)
+        certain = self.next_formulas[minvar]
+        certain_e = round(mean[minvar][0],1)
 
         print(f"Minimum uncertainty in prediction of energy of unexplored compositions is \n \
-               {round(min(varience)[0],1)} meV/atom for {certain}, {certain_e} meV/atoms above CH", file=log)
+               {round(min(varience)[0],1)} meV/atom for {certain}", file=log)
         print(f"Maximum uncertainty in prediction of energy of unexplored compositions is \n \
-               {round(max(varience)[0],1)} meV/atom for {uncertain}, {uncertain_e} meV/atom above CH", file=log)
+               {round(max(varience)[0],1)} meV/atom for {uncertain}" file=log)
