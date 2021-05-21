@@ -207,5 +207,16 @@ class PhaseFieldBO(PhaseField):
         
         model = self.bo.model
         _, varience = model.predict(self.candidates_fc)
+        maxvar = np.argmax(varience)
+        minvar = np.argmin(varience)
+        uncertain = self.candidates[maxvar]
+        certain = self.candidates[minvar]
+        uncertain_f = self.fcsym(self.candidates_fc[maxvar])
+        certain_f = self.fcsym(self.candidates_fc[minvar])
+        uncertain_e = round(self.dicfc[uncertain_f][0], 1)
+        certain_e = round(self.dicfc[certain_f][0], 1)
 
-        print(f"Maximum uncertainty in prediction of energy of unexplored compositions is {max(varience)[0]} eV", file=log)
+        print(f"Minimum uncertainty in prediction of energy of unexplored compositions is \n \
+               {round(min(varience)[0],1)} meV/atom for {certain}, {certain_e} meV/atoms above CH", file=log)
+        print(f"Maximum uncertainty in prediction of energy of unexplored compositions is \n \
+               {round(max(varience)[0],1)} meV/atom for {uncertain}, {uncertain_e} meV/atom above CH", file=log)
