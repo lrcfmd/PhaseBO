@@ -219,4 +219,4 @@ class PhaseFieldBO(PhaseField):
         print(f"Minimum uncertainty in prediction of energy of unexplored compositions is \n \
                {round(min(varience)[0],1)} meV/atom for {certain}", file=log)
         print(f"Maximum uncertainty in prediction of energy of unexplored compositions is \n \
-               {round(max(varience)[0],1)} meV/atom for {uncertain}" file=log)
+               {round(max(varience)[0],1)} meV/atom for {uncertain}", file=log)
