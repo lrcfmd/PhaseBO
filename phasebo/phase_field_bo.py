@@ -189,3 +189,23 @@ class PhaseFieldBO(PhaseField):
                #key = f"{n[0]} {n[1]}" # for 2D square
                print(self.next_list[key])
                print("next:", self.next_list[key], file=f)
+
+    def get_uncertainty(self, log, mesh=None):
+        """ prints varience of surrogate function """
+        
+        # for a dense mesh - works for 3 components only 
+        if mesh: 
+            bounds = self.bo.acquisition.space.get_bounds()
+            X1 = np.linspace(bounds[0][0], bounds[0][1], mesh)
+            X2 = np.linspace(bounds[1][0], bounds[1][1], mesh)
+            X3 = np.linspace(bounds[2][0], bounds[2][1], mesh)
+            x1, x2, x3 = np.meshgrid(X1, X2, X3)
+            X = np.hstack((x1.reshape(mesh**3,1),x2.reshape(mesh**3,1),x3.reshape(mesh**3,1))) 
+        else:
+        # for all candidate compositions
+            X = self.candidates_fc
+        
+        model = self.bo.model
+        _, varience = model.predict(self.candidates_fc)
+
+        print(f"Maximum uncertainty in prediction of energy of unexplored compositions is {max(varience)[0]} eV", file=log)

@@ -36,6 +36,7 @@ def run(compositions, references, ions, mode, Ntot, seeds, max_iter, log, limits
     elif mode == 'suggest':
        # bopt.plot_suggested() -- to add {pd_coords: 2d_square_coords} for plotting on 2d square
         bopt.print_results(log)
+        bopt.get_uncertainty(log)
 
     return bopt
 
@@ -44,7 +45,7 @@ if __name__ == '__main__':
     ifile = 'LiSnSCl_700eV.csv'           # File with compositions and total enthalpies
     ions = {'Li':1,'Sn':4,'S':-2,'Cl':-1} # Ions and oxidation states
                                           #
-    mode = 'generate'                      # Modes for running BO:
+    mode = 'suggest'                      # Modes for running BO:
                                           #    'path':    Calculates a would-be-BO-path towards
                                           #               a composition with minimum E above convex hull
                                           #    'suggest': Calculates next best suggested compositions
@@ -69,4 +70,4 @@ if __name__ == '__main__':
     #candidatesf = 'candidates_list.csv'
     #next_formulas = [i[0].strip() for i in pd.read_csv(candidatesf).values]
 
-    run(compositions, references, ions, mode, N_atoms, seeds, max_iter, log, limits, next_formulas=None, allow_negative=False)
+    run(compositions, references, ions, mode, N_atoms, seeds, max_iter, log, limits=None, next_formulas=None, allow_negative=False)
