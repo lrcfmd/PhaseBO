@@ -45,4 +45,4 @@ plot_mode = 'screen'                  # Select plotting mode: 'web' creates inte
 
 #------------- RUN -----------------  # You shouldn't need to modify run function call or anything in phase_fields_bo/ folder
 
-run(compositions, references, ions, mode, N_atom, seeds, max_iter, limits, log, next_formulas=next_formulas, allow_negative=False)
+run(compositions, references, ions, mode, N_atom, seeds, max_iter, log, limits, next_formulas=next_formulas, allow_negative=False)

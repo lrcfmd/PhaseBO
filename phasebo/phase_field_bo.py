@@ -93,7 +93,7 @@ class PhaseFieldBO(PhaseField):
        next_entries, next_formulas = self.computed_compositions(self.next_formulas, 100*np.ones(len(self.next_formulas)))
        tmp_pd = PhaseDiagram(self.computed_entries + next_entries)
        self.next_coords = self.get_phase_coordinates(tmp_pd, next_formulas) 
-       next_dic = {self.fcsym(f) : name for f, name in zip(self.next_coords, next_formulas)}
+       next_dic = {self.fcsym(f) : name for f, name in zip(self.next_coords, self.next_formulas)}
 
        return self.next_coords, next_dic 
 
@@ -192,6 +192,7 @@ class PhaseFieldBO(PhaseField):
 
     def get_uncertainty(self, log, mesh=None):
         """ prints varience of surrogate function """
+        model = self.bo.model
         
         if mesh: 
             # for a dense mesh - works for 3 components only 
@@ -201,22 +202,28 @@ class PhaseFieldBO(PhaseField):
             X3 = np.linspace(bounds[2][0], bounds[2][1], mesh)
             x1, x2, x3 = np.meshgrid(X1, X2, X3)
             X = np.hstack((x1.reshape(mesh**3,1),x2.reshape(mesh**3,1),x3.reshape(mesh**3,1))) 
+            mean, variance = model.predict(X)
+            print(f"Minimum uncertainty in prediction of energy of unexplored compositions is \n \
+                   {round(min(variance)[0],1)} meV/atom for coordinates {X[np.argmin(variance)]}", file=log)
+            print(f"Maximum uncertainty in prediction of energy of unexplored compositions is \n \
+                   {round(max(variance)[0],1)} meV/atom for coordinates {X[np.argmax(variance)]}", file=log)
+
+
         else:
             # for all next candidate compositions
             X = self.next_coords
         
-        model = self.bo.model
-        mean, varience = model.predict(X)
+            mean, variance = model.predict(X)
 
-        maxvar = np.argmax(varience)
-        minvar = np.argmin(varience)
+            maxvar = np.argmax(variance)
+            minvar = np.argmin(variance)
 
-        uncertain = self.next_formulas[maxvar]
-        uncertain_e = round(mean[maxvar][0],1)
-        certain = self.next_formulas[minvar]
-        certain_e = round(mean[minvar][0],1)
+            uncertain = self.next_formulas[maxvar]
+            uncertain_e = round(mean[maxvar][0],1)
+            certain = self.next_formulas[minvar]
+            certain_e = round(mean[minvar][0],1)
 
-        print(f"Minimum uncertainty in prediction of energy of unexplored compositions is \n \
-               {round(min(varience)[0],1)} meV/atom for {certain}", file=log)
-        print(f"Maximum uncertainty in prediction of energy of unexplored compositions is \n \
-               {round(max(varience)[0],1)} meV/atom for {uncertain}", file=log)
+            print(f"Minimum uncertainty in prediction of energy of unexplored compositions is \n \
+{round(min(variance)[0],1)} meV/atom for {certain}", file=log)
+            print(f"Maximum uncertainty in prediction of energy of unexplored compositions is \n \
+{round(max(variance)[0],1)} meV/atom for {uncertain}", file=log)
