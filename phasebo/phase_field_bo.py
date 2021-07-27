@@ -16,9 +16,9 @@ class PhaseFieldBO(PhaseField):
                  ions,
                  mode,
                  seeds_type,
+                 n_seeds=9,
                  next_formulas=None,
                  exclude_zeros=False,
-                 n_seeds=9,
                  disect=3,
                  Ntot=24,
                  limits=None,
@@ -31,8 +31,8 @@ class PhaseFieldBO(PhaseField):
         self.mode = mode
         self.iter = max_iter
         self.seeds_type = seeds_type
-        self.exclude = exclude_zeros
         self.n_seeds = n_seeds
+        self.exclude = exclude_zeros
         self.disect = disect
         self.Ntot = Ntot
         self.limits = limits
@@ -43,6 +43,7 @@ class PhaseFieldBO(PhaseField):
             self.bo.run_optimization(self.iter, verbosity=False)
         elif self.mode == 'suggest':
             self.next = self.bo.suggest_next_locations()
+        print(f"NSEEEDS:{self.n_seeds}")
 
     def setBO(self):
         if self.mode == 'path':

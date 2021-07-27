@@ -4,13 +4,14 @@ import pandas as pd
 from GPyOpt.methods import BayesianOptimization
 from phasebo.phase_field_bo import PhaseFieldBO
 
-def run(compositions, references, ions, mode, Ntot, seeds, max_iter, log, limits=None, next_formulas=None, allow_negative=False):
+def run(compositions, references, ions, mode, Ntot, seeds, n_seeds, max_iter, log, limits=None, next_formulas=None, allow_negative=False):
     """ BO run """
     bopt = PhaseFieldBO(compositions,
                     references,
                     ions,
                     mode,
                     seeds,
+                    n_seeds=n_seeds,
                     exclude_zeros=True,
                     Ntot=Ntot,
                     limits=limits,

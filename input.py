@@ -19,6 +19,8 @@ seeds = 'random'                      # Method to choose seeds in mode == 'path'
                                       #    'random' seeds are selected randomly
                                       #    'segmented': (deprecated) seeds are picked from sections of the phase field.
                                       # 
+n_seeds = 23                           # Number of seeds. default: 9 
+                                      # 
 limits = {'Li': [1, 10],              # Min and max limits on amounts of atoms of each atomic element 
           'Sn': [1, 5],               # the limits will be used when candidates are generated in 'suggest' and 'generate' 
            'S': [1, 10],              # modes.
@@ -45,4 +47,4 @@ plot_mode = 'screen'                  # Select plotting mode: 'web' creates inte
 
 #------------- RUN -----------------  # You shouldn't need to modify run function call or anything in phase_fields_bo/ folder
 
-run(compositions, references, ions, mode, N_atom, seeds, max_iter, log, limits, next_formulas=next_formulas, allow_negative=False)
+run(compositions, references, ions, mode, N_atom, seeds, n_seeds, max_iter, log, limits, next_formulas=next_formulas, allow_negative=False)
