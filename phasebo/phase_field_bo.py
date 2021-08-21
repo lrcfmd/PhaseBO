@@ -1,5 +1,8 @@
 import sys
+import time
 import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
 from numpy.random import seed
 from pymatgen.analysis.phase_diagram import PhaseDiagram
 from GPyOpt.methods import BayesianOptimization
@@ -43,10 +46,10 @@ class PhaseFieldBO(PhaseField):
             self.bo.run_optimization(self.iter, verbosity=False)
         elif self.mode == 'suggest':
             self.next = self.bo.suggest_next_locations()
-        print(f"NSEEEDS:{self.n_seeds}")
 
     def setBO(self):
         if self.mode == 'path':
+            print(f"Mode: 'path' with NSEEEDS:{self.n_seeds}")
             if self.seeds_type == 'random':
                 self.nseeds, self.nseeds_energy = self.get_random_seeds(self.n_seeds, self.exclude)
             elif self.seeds_type == 'segmented':
@@ -160,7 +163,7 @@ class PhaseFieldBO(PhaseField):
        arg = np.argsort(self.candidates_energies)
        print('All compositions:', file=f)
        print('-----------------', file=f)
-       print('Composition     eV/atom above CH', file=f)
+       print('Composition     meV/atom above CH', file=f)
        for c, e in zip(np.array(self.candidates)[arg], np.array(self.candidates_energies)[arg]):
             print(c, round(e,2), file=f)
        
@@ -173,13 +176,13 @@ class PhaseFieldBO(PhaseField):
            with open(f'BO_Path_in_{pf}.txt', 'a') as f:
               print('Seeds:', file=f)
               print('------', file=f)
-              print('Composition     eV/atom above CH', file=f)
+              print('Composition     meV/atom above CH', file=f)
               for s,e in zip(self.nseeds, self.nseeds_energy): 
                   print(self.dicfc[self.fcsym(s)][1], round(e,2), file=f)
               print()
               print('BO Path:', file=f)
               print('--------', file=f) 
-              print('Composition     eV/atom above CH', file=f)
+              print('Composition     meV/atom above CH', file=f)
               for n, e in zip(names, en_observed):
                   print(n, round(e,2), file=f)
 
@@ -213,18 +216,26 @@ class PhaseFieldBO(PhaseField):
         else:
             # for all next candidate compositions
             X = self.next_coords
+         
+            scaler = StandardScaler().fit(self.candidates_energies[:,None])
         
             mean, variance = model.predict(X)
+            mean = scaler.inverse_transform(mean)
+            variance = scaler.inverse_transform(variance)
 
-            maxvar = np.argmax(variance)
-            minvar = np.argmin(variance)
+            #maxvar = np.argmax(variance)
+            #minvar = np.argmin(variance)
+            #uncertain = self.next_formulas[maxvar]
+            #uncertain_e = round(mean[maxvar][0],1)
+            #certain = self.next_formulas[minvar]
+            #certain_e = round(mean[minvar][0],1)
 
-            uncertain = self.next_formulas[maxvar]
-            uncertain_e = round(mean[maxvar][0],1)
-            certain = self.next_formulas[minvar]
-            certain_e = round(mean[minvar][0],1)
+            un_df = pd.DataFrame({'Candidates': self.next_formulas, 
+                                  'Posterior mean (meV/atom)': [round(i,1) for i in mean.flatten()],
+                                  'Variance (meV/atom)': [round(i,1) for i in variance.flatten()]})
+            un_df = un_df.sort_values(['Posterior mean (meV/atom)'])
 
-            print(f"Minimum uncertainty in prediction of energy of unexplored compositions is \n \
-{round(min(variance)[0],1)} meV/atom for {certain}", file=log)
-            print(f"Maximum uncertainty in prediction of energy of unexplored compositions is \n \
-{round(max(variance)[0],1)} meV/atom for {uncertain}", file=log)
+            # --------- logtime
+            t = time.localtime()
+            timestamp = time.strftime('%b-%d-%Y_%H%M', t)
+            un_df.to_csv(f'posterior_{timestamp}.csv', index=None)
