@@ -18,11 +18,12 @@ def span(ions, Ntot, limits=None):
     else:
         amounts = [np.arange(1,Ntot+1) for i in ions]
     PP = list(P(*amounts))    
-    return [i for i in PP if sum(i) <= Ntot]
+    return [i for i in PP if sum(i) <= Ntot]  
 
 def balance(amounts, ions):
     balanced = []
     for a in amounts:
+        if sum(a) == 0: continue 
         if sum([n * charge for n,charge in zip(a, ions)]) == 0:
             balanced.append(a)
     return balanced
@@ -41,6 +42,7 @@ def generate(ions, inlist, Ntot, limits):
         if ''.join(name) not in inlist:
             names.append(''.join(name))
 
+   
     return names
 
 def print_pes(compositions, energies, log):
