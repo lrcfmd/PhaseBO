@@ -16,7 +16,7 @@ def span(ions, Ntot, limits=None):
     if limits:
         amounts = [np.arange(limits[i][0], limits[i][1]) for i in ions]
     else:
-        amounts = [np.arange(1,Ntot+1) for i in ions]
+        amounts = [np.arange(0,Ntot+1) for i in ions]
     PP = list(P(*amounts))    
     return [i for i in PP if sum(i) <= Ntot]  
 
@@ -33,7 +33,7 @@ def generate(ions, inlist, exclude, Ntot, limits):
     amounts = span(ions, Ntot, limits)
     amounts = balance(amounts, list(ions.values()))
     symbols = list(ions.keys())
-    names = []  
+    names = []
     for amount in amounts: 
         name = []
         for s, n in zip(symbols, amount):
