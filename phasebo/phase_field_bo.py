@@ -69,7 +69,7 @@ class PhaseFieldBO(PhaseField):
             Y_init = self.candidates_energies[:,None]
             if not self.next_formulas:
                 print("Generating candidate compositions ...")
-                self.next_formulas = generate(self.ions, self.formulas, self.exclude, self.Ntot, self.limits)
+                self.next_formulas = generate(self.ions, self.formulas, self.exceptions, self.Ntot, self.limits)
                 for f in self.next_formulas: print (f)
 
             dom, self.next_list = self.get_dom_phase()
