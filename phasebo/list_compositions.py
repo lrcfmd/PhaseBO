@@ -28,18 +28,18 @@ def balance(amounts, ions):
             balanced.append(a)
     return balanced
 
-def generate(ions, inlist, Ntot, limits):
+def generate(ions, inlist, exclude, Ntot, limits):
+    if not exclude: exclude = []
     amounts = span(ions, Ntot, limits)
     amounts = balance(amounts, list(ions.values()))
     symbols = list(ions.keys())
     names = []  
-
     for amount in amounts: 
         name = []
         for s, n in zip(symbols, amount):
             name.append(f'{s}{n}')
 
-        if ''.join(name) not in inlist:
+        if ''.join(name) not in inlist + exclude:
             names.append(''.join(name))
 
    

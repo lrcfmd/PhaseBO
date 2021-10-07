@@ -6,10 +6,13 @@ import pandas as pd
 ifile = 'LiSnSCl_700eV.csv'           # File with compositions and total enthalpies
 cfile = 'candidates_list.csv'         # File with candidate compositions;
                                       # if not provided (default), the candidates will be generated automatically
+exfile = 'exclude_list.csv'           # File with compositions to exclude from consideration
+                                      # if not provided (defuault), none are excluded
                                       # 
 ions = {'Li':1,'Sn':4,'S':-2,'Cl':-1} # Ions and oxidation states
                                       # 
-mode = 'path'                         # Modes for running BO:
+#mode = 'suggest'                         # Modes for running BO:
+mode = 'generate'
                                       #    'path':     Calculates a would-be-BO-path towards 
                                       #                a composition with minimum E above convex hull
                                       #    'suggest':  Calculates next best suggested compositions 
@@ -21,12 +24,12 @@ seeds = 'random'                      # Method to choose seeds in mode == 'path'
                                       # 
 n_seeds = 23                           # Number of seeds. default: 9 
                                       # 
-limits = {'Li': [1, 10],              # Min and max limits on amounts of atoms of each atomic element 
-          'Sn': [1, 5],               # the limits will be used when candidates are generated in 'suggest' and 'generate' 
-           'S': [1, 10],              # modes.
-          'Cl': [1, 5]                # If limits are not specified (default), all charge-balanced compositions will be generated
+limits = {'Li': [0, 10],              # Min and max limits on amounts of atoms of each atomic element 
+          'Sn': [0, 5],               # the limits will be used when candidates are generated in 'suggest' and 'generate' 
+           'S': [0, 10],              # modes.
+          'Cl': [0, 5]                # If limits are not specified (default), all charge-balanced compositions will be generated
          }                            #
-N_atom = 24                           # Maximum number of atoms per unit cell in suggested compositions
+N_atom = 16                           # Maximum number of atoms per unit cell in suggested compositions
 max_iter = 10                         # Evaluation budget for BO
                                       # 
                                       # 
@@ -41,10 +44,15 @@ try:
 except Exception:
     next_formulas = None
 
+try:
+   exceptions = [i[0] for i in pd.read_csv(exfile).values]
+except Exception:
+   exceptions = None
+
 #------------- PLOT ----------------
 plot_mode = 'screen'                  # Select plotting mode: 'web' creates interactive plot in a browser (deprecated)
                                       # 'screen' (default) plots on a screen. 
 
 #------------- RUN -----------------  # You shouldn't need to modify run function call or anything in phase_fields_bo/ folder
 
-run(compositions, references, ions, mode, N_atom, seeds, n_seeds, max_iter, log, limits, next_formulas=next_formulas, allow_negative=False)
+run(compositions, references, ions, mode, N_atom, seeds, n_seeds, max_iter, log, limits, next_formulas=next_formulas, exceptions=exceptions, allow_negative=False)

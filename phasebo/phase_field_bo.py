@@ -27,9 +27,10 @@ class PhaseFieldBO(PhaseField):
                  limits=None,
                  max_iter=10, 
                  batch=4,
+                 exceptions=None,
                  allow_negative=False):
 
-        super().__init__(compositions, references, ions, allow_negative)  
+        super().__init__(compositions, references, ions, exceptions, allow_negative)  
         self.ions = ions
         self.mode = mode
         self.iter = max_iter
@@ -41,6 +42,7 @@ class PhaseFieldBO(PhaseField):
         self.limits = limits
         self.batch = batch
         self.next_formulas = next_formulas
+        self.exceptions = exceptions
         self.setBO()
         if self.mode == 'path':
             self.bo.run_optimization(self.iter, verbosity=False)
@@ -67,7 +69,7 @@ class PhaseFieldBO(PhaseField):
             Y_init = self.candidates_energies[:,None]
             if not self.next_formulas:
                 print("Generating candidate compositions ...")
-                self.next_formulas = generate(self.ions, self.formulas, self.Ntot, self.limits)
+                self.next_formulas = generate(self.ions, self.formulas, self.exclude, self.Ntot, self.limits)
                 for f in self.next_formulas: print (f)
 
             dom, self.next_list = self.get_dom_phase()
@@ -75,7 +77,8 @@ class PhaseFieldBO(PhaseField):
 
         elif self.mode == 'generate':
                 print("Generating candidate compositions, writing to candidates_list.csv")
-                self.next_formulas = generate(self.ions, self.formulas, self.Ntot, self.limits)
+                print(self.exceptions)
+                self.next_formulas = generate(self.ions, self.formulas, self.exceptions, self.Ntot, self.limits)
                 with open("candidates_list.csv",'a') as cl:
                     for f in self.next_formulas:
                         print(f, file=cl)

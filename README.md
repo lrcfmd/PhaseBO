@@ -68,8 +68,9 @@ algorithm.
  parameter | value 
 ---|--- 
  *mode*         | (default: 'path') Mode of calculations: the best path so far ('path'); suggest next compositions for CSP based on the available results ('suggest'); generate candidate compositions into candidates_list.csv ('generate') 
-*ifile*  | (default: LiSnSCl_700eV.csv) Input file. A table of compostions and their total energies.
-*cfile*  | (default: None) Input file. A list of candidate compostions (formulas) to consider. If not provided, the candidates will be generated automatically.
+*ifile*  | (default: LiSnSCl_700eV.csv) Input file. A table of compositions and their total energies.
+*cfile*  | (default: None) Input file. A list of candidate compositions (formulas) to consider. If not provided, the candidates will be generated automatically.
+*exfile*  | (default: None) Input file. A list of compostions (formulas) to exclude from convex hull calculations as well as from candidates. If not provided, no candidates are excluded.
 *ions*   | (default: {'Li':1,'Sn':4,'S':-2,'Cl':-1}) Ions and oxidation states.
 *seeds*  | (default: 'segmented') Method to choose seeds in mode == 'path': 'segmented': Seeds are picked from a segmented phase field. 'random' seeds are selected randomly - decreased efficiency. 
 *disect* | (default: 4) Number of sections of the phase field (disect x disect), from which the 'segmented' seeds are selected.

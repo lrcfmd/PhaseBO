@@ -11,9 +11,8 @@ class PhaseField:
     segments the field into dxd sections and select seeds in them,
     defines a function of Potential energy surface for Bayesian Optimisation"""
 
-    def __init__(self, compositions, references, ions, allow_negative=False):
-        self.compositions = compositions[:,0]
-        self.enthalpies = compositions[:,1]
+    def __init__(self, compositions, references, ions, exceptions, allow_negative=False):
+        self.exclude_exceptions(compositions, exceptions)
         self.references = list(references[:,0])
         self.elements = list(ions.keys())
         self.pd_coords = []
@@ -32,6 +31,15 @@ class PhaseField:
     def f(self, x):
          """ function of ehull energies for all fractional coordinates """
          return np.dot(np.where(np.all(self.pd_coords == x, axis=1), 1, 0), self.energies) 
+
+    def exclude_exceptions(self, compositions, exceptions):
+        if not exceptions: 
+            exceptions = []
+        self.compositions, self.enthalpies = [],[]
+        for i in range(len(compositions)):
+            if compositions[i,0] not in exceptions:
+                self.compositions.append(compositions[i,0])
+                self.enthalpies.append(compositions[i,1])
 
     @staticmethod
     def computed_compositions(compositions, enthalpies):
