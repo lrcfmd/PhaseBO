@@ -1,4 +1,4 @@
-# Exploration of the phase fields' minima with Bayesian Optimisation
+# Accelerated discovery of stable compositions in inorganic materials with Bayesian optimisation of the chemical phase fields
 
 3.02.2021 Andrij Vasylenko
 
