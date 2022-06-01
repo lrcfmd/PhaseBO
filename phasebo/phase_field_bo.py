@@ -70,7 +70,7 @@ class PhaseFieldBO(PhaseField):
             if not self.next_formulas:
                 print("Generating candidate compositions ...")
                 self.next_formulas = generate(self.ions, self.formulas, self.exceptions, self.Ntot, self.limits)
-                for f in self.next_formulas: print (f)
+                #for f in self.next_formulas: print (f)
 
             dom, self.next_list = self.get_dom_phase()
             self.domain = [{'name': 'var_1', 'type': 'bandit', 'domain': dom}]
@@ -104,20 +104,34 @@ class PhaseFieldBO(PhaseField):
 
        return self.next_coords, next_dic 
 
+    def f2f(ex):
+        """ TODO: transform atomic fractions (D-1)  to 2D fractions
+        add first element (Li) via charge balance  
+        """
+        return
+
+
     def plot_path(self, online=False):
        """ segments considered points to seeds, observed and best.
        if online - plots with annotation on hover """
 
        observed = [x for x in self.bo.X if all(np.all(self.nseeds != x, axis=1))]
+       #observed = [self.f2f(x) for x in observed] 
        color_observed = np.array([self.dicfc[self.fcsym(x)][0] for x in observed])
+
        best = [self.bo.x_opt]
        for x in self.bo.X:
            if self.dicfc[self.fcsym(x)][0] <= 0:
               best.append(x)
        best = [b for b in best if self.dicfc[self.fcsym(b)][0] <= 0]
        color_best = np.array([self.dicfc[self.fcsym(x)][0] for x in best])
-       
+
        fig, ax = plt.subplots()
+
+       # transform to 2D:
+       #candidates = [self.f2f(x) for x in self.candidates_fc]
+       #seeds = [self.f2f(x) for x in self.nseeds]
+       
        sc = ax.scatter(self.candidates_fc[:,0], self.candidates_fc[:,1], s=3, c=self.candidates_energies, cmap=cm.gist_heat, edgecolors='none')
        fig.colorbar(sc)
        ax.scatter(self.nseeds[:,0], self.nseeds[:,1], c=self.nseeds_energy, marker='^', cmap=cm.gist_heat, label='seeds')

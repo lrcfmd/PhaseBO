@@ -33,13 +33,15 @@ class PhaseField:
          return np.dot(np.where(np.all(self.pd_coords == x, axis=1), 1, 0), self.energies) 
 
     def exclude_exceptions(self, compositions, exceptions):
+        print ("Excluding exceptions...")
         if not exceptions: 
             exceptions = []
         self.compositions, self.enthalpies = [],[]
         for i in range(len(compositions)):
-            if compositions[i,0] not in exceptions:
+            if compositions[i,0].strip() not in exceptions:
                 self.compositions.append(compositions[i,0])
                 self.enthalpies.append(compositions[i,1])
+            else: print("excluding from consideration:", compositions[i,0])
 
     @staticmethod
     def computed_compositions(compositions, enthalpies):

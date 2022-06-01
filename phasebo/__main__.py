@@ -4,7 +4,7 @@ import pandas as pd
 from GPyOpt.methods import BayesianOptimization
 from phasebo.phase_field_bo import PhaseFieldBO
 
-def run(compositions, references, ions, mode, Ntot, seeds, n_seeds, max_iter, log, limits=None, next_formulas=None, exceptions=None, allow_negative=False):
+def run(compositions, references, ions, mode, Ntot, seeds, n_seeds, max_iter, log, batch_size=4, limits=None, next_formulas=None, exceptions=None, allow_negative=False):
     """ BO run """
     bopt = PhaseFieldBO(compositions,
                     references,
@@ -17,6 +17,7 @@ def run(compositions, references, ions, mode, Ntot, seeds, n_seeds, max_iter, lo
                     limits=limits,
                     max_iter=max_iter,
                     next_formulas=next_formulas,
+                    batch=batch_size,
                     exceptions=exceptions,
                     allow_negative=allow_negative)
 
@@ -31,7 +32,7 @@ def run(compositions, references, ions, mode, Ntot, seeds, n_seeds, max_iter, lo
     log = open(f"{log}-{timestamp}",'a')
 
     if mode == 'path':
-       # bopt.plot_path() -- to add {pd_coords: 2d_square_coords} for plotting on 2d square
+        #bopt.plot_path()        #-- to add {pd_coords: 2d_square_coords} for plotting on 2d square
         bopt.bo.plot_convergence()
         bopt.bo.plot_acquisition()
         bopt.print_results(log)
