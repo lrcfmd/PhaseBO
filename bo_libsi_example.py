@@ -7,22 +7,22 @@ ifile = 'LiBSI.csv'
 #cfile = 'candidates_list.csv'
 ions = {'Li':1,'B':3,'I':-1,'S':-2} # Ions and oxidation states
                                       # 
-#mode = 'generate'                         # Modes for running BO:
-mode = 'suggest'                         # Modes for running BO:
+mode = 'generate'                         # Modes for running BO:
+#mode = 'suggest'                         # Modes for running BO:
                                       #    'path':    Calculates a would-be-BO-path towards 
                                       #               a composition with minimum E above convex hull
                                       #    'suggest': Calculates next best suggested compositions 
                                       # 
-limits = {'Li':[1,20],
-          'B': [0,4],
-          'S': [0,10],
-          'I': [0,20]}
+#limits = {'Li':[1,20],
+#          'B': [1,4],
+#          'S': [1,10],
+#          'I': [1,20]}
 
 seeds = 'random'                      # Method to choose seeds in mode == 'path':
                                       #    'random' seeds are selected randomly
                                       #    'segmented': (deprecated) seeds are picked from sections of the phase field.
                                       # 
-N_atom = 24                           # Maximum number of atoms per unit cell in suggested compositions
+N_atom = 40                           # Maximum number of atoms per unit cell in suggested compositions
 max_iter = 10                         # Evaluation budget for BO
 
 #------------- READ -----------------
@@ -46,9 +46,9 @@ plot_mode = 'screen'                  # Select plotting mode: 'web' creates inte
 bopt = run(compositions, references, ions, mode, N_atom, seeds, 9,  max_iter, log, limits=limits, next_formulas=None, allow_negative=False)
 
 #------------- POSTPROCES -----------
-for entry in bopt.computed_entries:
+#for entry in bopt.computed_entries:
 #    print(entry.composition, entry.energy, 1000*bopt.pd.get_decomp_and_e_above_hull(entry,allow_negative=True)[1])
-    print(entry.composition, entry.energy, 1000*bopt.pd.get_e_above_hull(entry))
+#    print(entry.composition, entry.energy, 1000*bopt.pd.get_e_above_hull(entry))
 
 #  if 1000*bopt.pd.get_e_above_hull(entry) == 0:
 #      print(entry.composition, entry.energy, 1000*bopt.pd.get_equilibrium_reaction_energy(entry))

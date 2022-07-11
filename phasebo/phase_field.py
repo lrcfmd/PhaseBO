@@ -11,7 +11,7 @@ class PhaseField:
     segments the field into dxd sections and select seeds in them,
     defines a function of Potential energy surface for Bayesian Optimisation"""
 
-    def __init__(self, compositions, references, ions, exceptions, allow_negative=False):
+    def __init__(self, compositions, references, ions, exceptions, allow_negative=True):
         self.exclude_exceptions(compositions, exceptions)
         self.references = list(references[:,0])
         self.elements = list(ions.keys())

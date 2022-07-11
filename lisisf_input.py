@@ -6,8 +6,8 @@ import pandas as pd
 ifile = 'LiSiSF_xtalopt.csv'         # File with compositions and total enthalpies
 ions = {'Li':1,'Si':4,'S':-2,'F':-1} # Ions and oxidation states
                                       # 
-mode = 'suggest'                         # Modes for running BO:
-                                      #    'path':    Calculates a would-be-BO-path towards 
+#mode = 'suggest'                         # Modes for running BO:
+mode = 'generate'                                      #    'path':    Calculates a would-be-BO-path towards 
                                       #               a composition with minimum E above convex hull
                                       #    'suggest': Calculates next best suggested compositions 
                                       # 
@@ -15,7 +15,7 @@ seeds = 'random'                      # Method to choose seeds in mode == 'path'
                                       #    'random' seeds are selected randomly
                                       #    'segmented': (deprecated) seeds are picked from sections of the phase field.
                                       # 
-N_atom = 24                           # Maximum number of atoms per unit cell in suggested compositions
+N_atom = 40                           # Maximum number of atoms per unit cell in suggested compositions
 max_iter = 10                         # Evaluation budget for BO
 
 #------------- READ -----------------
