@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phasebo"
+version = "0.1.4"
+description = "Bayesian optimisation for accelerated exploration of phase fields"
+readme = "README.md"
+requires-python = ">=3.7,<3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Andrij Vasylenko", email = "and.vasylenko@gmail.com" }
+]
+urls = { "Homepage" = "http://github.com/DrewNow/PhaseFieldsBO" }
+
+dependencies = [
+    "numpy",
+    "GPyOpt",
+    "pandas",
+    "pymatgen",
+    "scikit-learn",
+]
+
+[project.optional-dependencies]
+# If you have e.g., dev or docs extras, you can define them here
+
+[project.scripts]
+phasebo = "phasebo.__main__:run"

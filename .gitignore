@@ -1,4 +1,6 @@
 __pycache__/
+phasebo.egg-info/
+
 sandbo/
 test_clean/
 test_zeng/

@@ -1,220 +1,244 @@
+import logging
 import numpy as np
+import random
+from numpy import ndarray
+from numpy.random import seed
+from typing import List, Dict, Tuple, Optional
+
 from pymatgen.analysis.phase_diagram import PhaseDiagram
 from pymatgen.entries.computed_entries import ComputedEntry
-import random
-from numpy.random import seed
+from pymatgen.core.composition import Composition
 
 class PhaseField:
-    """ 
-    For the list of compositions and their energies
-    determines fractional positions and a phase diagram (convex hull)
-    segments the field into dxd sections and select seeds in them,
-    defines a function of Potential energy surface for Bayesian Optimisation"""
+    """
+    Represents a phase field from a list of compositions and their energies.
+    Constructs convex hull (phase diagram), extracts fractional coordinates,
+    segments the field for seed selection, and provides functions for potential energy surfaces
+    to be used in Bayesian optimization.
+    """
 
-    def __init__(self, compositions, references, ions, exceptions, allow_negative=True):
-        self.exclude_exceptions(compositions, exceptions)
-        self.references = list(references[:,0])
+    def __init__(self,
+                 compositions: ndarray,
+                 references: ndarray,
+                 ions: Dict[str, float],
+                 exceptions: Optional[List[str]] = None,
+                 allow_negative: bool = True,
+                 logger: logging.Logger = None):
+        self.logger = logger or logging.getLogger(__name__)
+        self.references = list(references[:, 0])
         self.elements = list(ions.keys())
-        self.pd_coords = []
-        self.dic = {}
-        self.dicfc = {}
-        self.sections = []
-        self.seeds = []
-        self.seeds_energy = []
-        # for each instance of a phase field:
+        self.exceptions = exceptions if exceptions else []
+
+        # Will be populated
+        self.compositions: List[str] = []
+        self.enthalpies: List[float] = []
+
+        # Data containers
+        self.pd_coords: ndarray = np.array([])
+        self.formulas: List[Composition] = []
+        self.computed_entries: List[ComputedEntry] = []
+        self.energies: ndarray = np.array([])
+        self.dic: Dict[str, List] = {}
+        self.dicfc: Dict[str, List] = {}
+        self.sections: List[List[str]] = []
+        self.seeds: List[str] = []
+        self.seeds_energy: List[float] = []
+        self.candidates: ndarray = np.array([])
+        self.candidates_fc: ndarray = np.array([])
+        self.candidates_energies: ndarray = np.array([])
+
+        self.exclude_exceptions(compositions)
         self.compute_convex(allow_negative)
         self.pd_coords = self.get_phase_coordinates(self.pd, self.formulas)
         self.create_dict()
         self.create_dicfc()
         self.get_candidates()
 
-    def f(self, x):
-         """ function of ehull energies for all fractional coordinates """
-         return np.dot(np.where(np.all(self.pd_coords == x, axis=1), 1, 0), self.energies) 
-
-    def exclude_exceptions(self, compositions, exceptions):
-        print ("Excluding exceptions...")
-        if not exceptions: 
-            exceptions = []
-        self.compositions, self.enthalpies = [],[]
+    def exclude_exceptions(self, compositions: ndarray):
+        """
+        Filter out specified compositions (exceptions) from consideration.
+        """
+        self.logger.info("Excluding exceptions...")
         for i in range(len(compositions)):
-            if compositions[i,0].strip() not in exceptions:
-                self.compositions.append(compositions[i,0])
-                self.enthalpies.append(compositions[i,1])
-            else: print("excluding from consideration:", compositions[i,0])
+            name = compositions[i, 0].strip()
+            if name not in self.exceptions:
+                self.compositions.append(name)
+                self.enthalpies.append(compositions[i, 1])
+            else:
+                self.logger.info(f"Excluding from consideration: {name}")
 
     @staticmethod
-    def computed_compositions(compositions, enthalpies):
-        """ Returns a list of ComputedEntry pymatgen objects and a list of ordered by element formulas """
-        structures = []
-        formulas = []
+    def computed_compositions(compositions: List[str], enthalpies: List[float]) -> Tuple[List[ComputedEntry], List[Composition]]:
+        """
+        Returns ComputedEntry objects and their corresponding Composition formulas.
+        """
+        entries, formulas = [], []
         for c, e in zip(compositions, enthalpies):
-            ce = ComputedEntry(f"{c}", e )
-            structures.append(ce)
+            ce = ComputedEntry(c, e)
+            entries.append(ce)
             formulas.append(ce.composition)
-        return structures, formulas
+        return entries, formulas
 
-    def compute_convex(self, allow_negative=False):
-        """ Calculates energies above the convex hull (meV/atom)
-        for all compositions, including references. 
-        If allow_negative: associates energy below the hull with stable compositions"""
-     
-        print ("Computing energies above convex hull...") 
+    def compute_convex(self, allow_negative: bool = False):
+        """
+        Calculates energies above convex hull (meV/atom) for all compositions.
+        """
+        self.logger.info("Computing energies above convex hull...")
         self.computed_entries, self.formulas = self.computed_compositions(self.compositions, self.enthalpies)
         self.pd = PhaseDiagram(self.computed_entries)
         energies_list = []
+
         for entry in self.computed_entries:
-            hull_energy = 1000*self.pd.get_e_above_hull(entry)
+            hull_energy = 1000 * self.pd.get_e_above_hull(entry)
             if allow_negative and hull_energy == 0:
                 try:
-                    energies_list.append(1000*self.pd.get_equilibrium_reaction_energy(entry))
-                except:
-                    print(f"Exception: {entry.composition}, {entry.energy}, {hull_energy}")
+                    energies_list.append(1000 * self.pd.get_equilibrium_reaction_energy(entry))
+                except Exception as ex:
+                    self.logger.info(f"Exception for {entry.composition}: {ex}")
                     energies_list.append(hull_energy)
             else:
                 energies_list.append(hull_energy)
+
         self.energies = np.array(energies_list)
 
     @staticmethod
-    def get_phase_coordinates(pd, formulas):
-        """ Computes coordinates in a simplex of a phase field """
-        coords = []
-        for formula in formulas:
-            coords.append(pd.pd_coords(formula))
+    def get_phase_coordinates(pd: PhaseDiagram, formulas: List[Composition]) -> ndarray:
+        """
+        Get simplex coordinates for compositions in a phase diagram.
+        """
+        coords = [pd.pd_coords(f) for f in formulas]
         return np.array(coords)
-   
-    def get_2D_square_coordinates(self):
-        """ Computes fractional coordinates of compositions on a 2D(quaternary) phase field""" 
+
+    def get_2D_square_coordinates(self) -> ndarray:
+        """
+        Compute fractional 2D coordinates for quaternary phase fields.
+        """
         var1, var2 = [], []
         for formula in self.formulas:
-            c1 = formula[self.elements[0]]
-            c2 = formula[self.elements[1]]
-            a1 = formula[self.elements[2]]
-            a2 = formula[self.elements[3]]
-            if c1 + c2 != 0:
-                var1.append(c1 / (c1 + c2))
-            else:
-                var1.append(1)
-            if a1 + a2 != 0:
-                var2.append(a1 / (a1 + a2))
-            else:
-                var2.append(1)
-        return np.array([np.array(var1), np.array(var2)]).T 
+            c1, c2 = formula[self.elements[0]], formula[self.elements[1]]
+            a1, a2 = formula[self.elements[2]], formula[self.elements[3]]
+            var1.append(c1 / (c1 + c2) if c1 + c2 else 1)
+            var2.append(a1 / (a1 + a2) if a1 + a2 else 1)
+        return np.vstack([var1, var2]).T
 
-    def create_dict(self): 
-        """ get a dictionary of unique compositions with lowest energy values
-            and fractional coordinates"""
-        # for ph. f. representation on a square 
+    def create_dict(self):
+        """
+        Create dictionary with unique compositions as keys and [energy, fractional coordinates, 2D square coords] as values.
+        """
         if len(self.elements) == 4:
-            square_coordinates = self.get_2D_square_coordinates()
+            square_coords = self.get_2D_square_coordinates()
         else:
-            square_coordinates = np.zeros(len(self.compositions))
+            square_coords = np.zeros((len(self.compositions), 2))
 
-        for c, e, f, s in zip(self.compositions, self.energies, self.pd_coords, square_coordinates):
-            if c not in self.dic: self.dic[c] = [e, f, s]
-            elif e < self.dic[c][0]: self.dic[c] = [e, f, s]
+        for c, e, fc, sc in zip(self.compositions, self.energies, self.pd_coords, square_coords):
+            if c not in self.dic or e < self.dic[c][0]:
+                self.dic[c] = [e, fc, sc]
 
     @staticmethod
-    def fcsym(fc):
-        """ return a string for fractional coordinates """
-        return ' '.join(map(str, list(fc)))
+    def fcsym(fc: ndarray) -> str:
+        """
+        Returns string representation for fractional coordinates.
+        """
+        return " ".join(map(str, fc.tolist()))
 
     def create_dicfc(self):
-        """ dictionary with fractional coordinates for the keys """
-        for f, e, c in zip(self.pd_coords, self.energies, self.compositions):
-            self.dicfc[self.fcsym(f)] = [e, c]
+        """
+        Create dictionary using fractional coordinate strings as keys and [energy, composition] as values.
+        """
+        for fc, e, c in zip(self.pd_coords, self.energies, self.compositions):
+            self.dicfc[self.fcsym(fc)] = [e, c]
 
     def get_candidates(self):
-        """ segregate candidates from references and seeds
-        and get fractional coordinates of the candidate compositions"""
-        self.candidates = np.array([c for c in self.compositions if c not in self.references + list(self.seeds)])
+        """
+        Segregate candidates by excluding references and seeds.
+        """
+        self.candidates = np.array([c for c in self.compositions if c not in self.references + self.seeds])
         self.candidates_fc = np.array([self.dic[c][1] for c in self.candidates])
         self.candidates_energies = np.array([self.dic[c][0] for c in self.candidates])
 
-    def segment_pf(self, disect=4):             
-        """ segment quaternary phase field (2d) by disect x disect sections. """ 
-        sections = [[[] for i in range(disect)] for j in range(disect)]
+    def segment_pf(self, disect: int = 4):
+        """
+        Segment the 2D phase field into disect x disect sections.
+        """
+        self.sections = [[[] for _ in range(disect)] for _ in range(disect)]
         rangex = np.linspace(0, 1, disect + 1)
-        secx = list(zip(rangex, rangex[1:]))
+        secx = list(zip(rangex[:-1], rangex[1:]))
 
-        for i, c in enumerate(self.candidates_fc):
+        for i, fc in enumerate(self.candidates_fc):
             for x in range(disect):
-                for y in range(disect):
-                    if secx[x][0] <= c[0] < secx[x][1]:
-                        if secx[y][0] <= c[1] < secx[y][1]:
-                            sections[x][y].append(self.candidates[i])
-     
-        for sec in sections:
-            self.sections += sec
-   
-    def get_seeds_from_segments(self, disect=4, exclude=False):
-        """ get random seed from each segment. they will be excluded from candidates.
-        return fractional coordinates for the seeds and their energies"""
+                if secx[x][0] <= fc[0] < secx[x][1]:
+                    for y in range(disect):
+                        if secx[y][0] <= fc[1] < secx[y][1]:
+                            self.sections[x][y].append(self.candidates[i])
+
+        # Flatten sections for easier access later
+        self.sections = [sec for row in self.sections for sec in row]
+
+    def get_seeds_from_segments(self, disect: int = 4, exclude: bool = False) -> Tuple[ndarray, ndarray]:
+        """
+        Get one random seed from each segment.
+        Optionally exclude seeds with zero energies.
+        """
         self.segment_pf(disect)
 
         for sec in self.sections:
             random.shuffle(sec)
+            if not sec:
+                continue
             if exclude:
-                while not self.dic[sec[0]][0]: random.shuffle(sec)
+                sec = [s for s in sec if self.dic[s][0] != 0]
+                if not sec:
+                    continue
             self.seeds.append(sec[0])
 
         self.get_candidates()
-        return np.array([self.dic[s][1] for s in self.seeds]), np.array([self.dic[s][0] for s in self.seeds]), 
+        return np.array([self.dic[s][1] for s in self.seeds]), np.array([self.dic[s][0] for s in self.seeds])
 
-    def get_random_seeds(self, n, exclude=False):
-        """ choose seeds randomly. can be called instead of get_seeds_from_segments,
-        but not after in the same instance as that excludes more seeds from candidates.
-        if exclude==True, excludes seeds that have zero energies """
-        seeds = self.candidates
+    def get_random_seeds(self, n: int, exclude: bool = False) -> Tuple[ndarray, ndarray]:
+        """
+        Select n random seeds from candidates.
+        """
+        seeds = self.candidates.tolist()
         random.shuffle(seeds)
         if exclude:
-            while not all([self.dic[s][0] for s in seeds[:n]]): random.shuffle(seeds)
+            seeds = [s for s in seeds if self.dic[s][0] != 0]
         self.seeds = seeds[:n]
         self.get_candidates()
         return np.array([self.dic[s][1] for s in self.seeds]), np.array([self.dic[s][0] for s in self.seeds])
 
     def plot_convex(self):
-        """ plot interpolated ehull energy """
-
-        from scipy import interpolate
-        from matplotlib import cm
+        """
+        Plot interpolated energy above convex hull on the 2D square field.
+        """
         import matplotlib.pyplot as plt
+        from matplotlib import cm
+        from scipy import interpolate
 
         gridsize = 0.005
-        xnew = np.arange(0, 1., gridsize)
+        xnew = np.arange(0, 1, gridsize)
         ynew = np.arange(0, 1, gridsize)
+
         data = self.get_2D_square_coordinates()
-        f = interpolate.LinearNDInterpolator(data, self.energies)
-        znew = np.zeros((len(ynew), len(xnew)))
+        f_interp = interpolate.LinearNDInterpolator(data, self.energies)
+        znew = np.array([[f_interp(x, y) for x in xnew] for y in ynew])
 
-        for (i, xval) in enumerate(xnew):
-            for (j, yval) in enumerate(ynew):
-                znew[j, i] = f(xval, yval) 
+        fig, ax = plt.subplots()
+        cs = ax.contourf(xnew, ynew, znew, 50, cmap=cm.gist_heat)
+        cbar = plt.colorbar(cs, ax=ax)
+        cbar.set_label('Energy above hull (meV/atom)', fontsize=14)
 
-        fig,ax =plt.subplots()
-        plt.contourf(xnew, ynew, znew, 50, cmap=cm.gist_heat)
-        cbar = plt.colorbar()
-        cbar.set_label('Energy w.r.t. convex hull, meV/atom', fontsize=14)
-        plt.scatter(data[:,0], data[:,1], c='lime', marker='3', lw=1.5, label='Computed compositions')
-        plt.axis([0,1.,0,1.])
-        plt.xlabel(f'{self.elements[0]}/({self.elements[0]}+{self.elements[1]})', fontsize=14)
-        plt.ylabel(f'{self.elements[2]}/({self.elements[2]}+{self.elements[3]})', fontsize=14)
-        ax.legend(bbox_to_anchor=(0.5, 1.1),fontsize=10)
+        ax.scatter(data[:, 0], data[:, 1], c='lime', marker='3', lw=1.5, label='Computed compositions')
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_xlabel(f'{self.elements[0]}/({self.elements[0]}+{self.elements[1]})', fontsize=14)
+        ax.set_ylabel(f'{self.elements[2]}/({self.elements[2]}+{self.elements[3]})', fontsize=14)
+        ax.legend(bbox_to_anchor=(0.5, 1.1), fontsize=10)
+
         return plt
 
-if __name__ == "__main__":
-    import pandas
-
-    ifile = 'LiSnSCl_700eV.csv'           # File with compositions and total enthalpies
-    ions = {'Li':1,'Sn':4,'S':-2,'Cl':-1} # Ions and oxidation states 
-    df = pandas.read_csv(ifile, header=0)     #
-    compositions = df.values              # Select candidate and reported compositions
-    references = df.values[195:]          #
-
-    pf = PhaseField(compositions, references, ions, allow_negative=False)
-    coords = pf.pd_coords
-    #for i, c in enumerate(coords):
-    #    print(pf.formulas[i], c) 
-
-    plot = pf.plot_convex() 
-    plot.show()
+    def f(self, x: ndarray) -> float:
+        """
+        Function of energy at fractional coordinate x (discrete).
+        """
+        matches = np.all(self.pd_coords == x, axis=1)
+        return np.dot(np.where(matches, 1, 0), self.energies)

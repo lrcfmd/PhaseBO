@@ -1,4 +1,6 @@
+LICENSE
 README.md
+pyproject.toml
 setup.py
 phasebo/__init__.py
 phasebo/__main__.py
@@ -9,6 +11,5 @@ phasebo.egg-info/PKG-INFO
 phasebo.egg-info/SOURCES.txt
 phasebo.egg-info/dependency_links.txt
 phasebo.egg-info/entry_points.txt
-phasebo.egg-info/not-zip-safe
 phasebo.egg-info/requires.txt
 phasebo.egg-info/top_level.txt

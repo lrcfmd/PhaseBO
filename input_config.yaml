@@ -1,0 +1,23 @@
+# input_config.yaml
+
+inputfile: 'data/LiSnSCl_700eV.csv'    # File with compositions and total enthalpies
+compositionfile: 'data/candidates_list.csv'  # File with candidate compositions
+exludefile: 'data/exclude_list.csv'    # File with compositions to exclude
+reference_index: 195                   # Index in the inputfile for reference compositons
+ions:
+  Li: 1
+  Sn: 4
+  S: -2
+  Cl: -1
+mode: 'suggest'                    # 'path', 'suggest', or 'generate'
+seeds_type: 'random'               # 'random' or 'segmented' (deprecated)
+n_seeds: 23
+limits:
+  Li: [0, 10]
+  Sn: [0, 5]
+  S: [0, 10]
+  Cl: [0, 5]
+N_atom: 16
+max_iter: 10
+log: 'logfile'
+plot_mode: 'screen'           # 'screen' or 'web'

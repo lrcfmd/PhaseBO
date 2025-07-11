@@ -65,7 +65,6 @@ def print_next(x_next, candidates, log):
 
 if __name__=="__main__":
     ions = {'Li':1, 'Zn':2, 'S':-2, 'Cl':-1}
-    #ions = {'Ba':2,'Nb':4,'Mg':2,'O':-2}
     Ntot = 24
 
     compositions = []
