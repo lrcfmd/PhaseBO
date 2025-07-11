@@ -52,7 +52,9 @@ The default run with input_config.yaml results int the outputs in `example`
 
 ## Reference
 Please consider citing this tool:
-"A. Vasylenko et al 
+A. Vasylenko et al,
+Inferring energy–composition relationships with Bayesian optimization enhances exploration of inorganic materials.
+The Journal of Chemical Physics 160, 5, 054110 (2024)
 
 
 The code is based on GPyOpt implementation of Bayesian optimisation 
