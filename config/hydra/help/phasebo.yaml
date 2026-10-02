@@ -1,0 +1,25 @@
+app_name: phasebo
+
+header: |
+  phasebo: Bayesian optimisation of chemical phase fields.
+
+footer: |
+  Use --hydra-help for Hydra's own options, --cfg job to print the composed configuration.
+
+template: |
+  ${hydra.help.header}
+  Choose an option of each group and override any value, e.g.
+    phasebo mode=path mode.n_seeds=10 bo.acquisition=ts
+    phasebo -m mode=path seed=0,1,2              sweep, one output directory per run
+    phasebo experiment=compare_acquisitions      preset sweep
+    phasebo -cd my_configs system=my_system      phase field from my_configs/system/my_system.yaml
+
+  Each run writes its log, results and plots to outputs/<system>/<date>/<time>_<mode>/
+
+  == Configuration groups ==
+  $APP_CONFIG_GROUPS
+
+  == Config ==
+  $CONFIG
+
+  ${hydra.help.footer}

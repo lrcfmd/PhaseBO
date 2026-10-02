@@ -66,3 +66,23 @@ def test_get_seeds_from_segments(dummy_data):
     fc, energies = pf.get_seeds_from_segments(disect=2)
     assert len(fc) == len(pf.seeds)
     assert len(energies) == len(pf.seeds)
+
+
+def test_padded_references_are_not_candidates(li_s_cl):
+    compositions, references, ions = li_s_cl
+    n = len(compositions) - len(references)
+    padded = compositions.copy()
+    padded[n:, 0] = ['   ' + name for name in padded[n:, 0]]   # as in data/LiSnSCl_700eV.csv
+    pf = PhaseField(padded, padded[n:], ions, logger=logging.getLogger('test_logger'))
+    assert sorted(pf.candidates) == sorted(compositions[:n, 0])
+
+
+def test_shared_coordinates_take_lowest_energy(li_s_cl):
+    compositions, references, ions = li_s_cl
+    pf = PhaseField(compositions, references, ions, allow_negative=False, logger=logging.getLogger('test_logger'))
+    # Li6S2Cl2 is Li3SCl in a larger cell, 30 meV/atom higher
+    assert pf.dic['Li6 S2 Cl2'][0] == pytest.approx(30)
+    point = pf.dic['Li3 S1 Cl1'][1]
+    energy, name = pf.dicfc[pf.fcsym(point)]
+    assert pf.f(point) == pytest.approx(0)
+    assert (energy, name) == (pytest.approx(0), 'Li3 S1 Cl1')

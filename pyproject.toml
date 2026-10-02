@@ -1,13 +1,10 @@
-[build-system]
-requires = ["setuptools>=61", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "phasebo"
 version = "0.1.4"
 description = "Bayesian optimisation for accelerated exploration of phase fields"
 readme = "README.md"
-requires-python = ">=3.7,<3.10"
+# hydra-core < 1.4 fails on Python 3.14
+requires-python = ">=3.11,<3.14"
 license = { text = "MIT" }
 authors = [
     { name = "Andrij Vasylenko", email = "and.vasylenko@gmail.com" }
@@ -15,15 +12,41 @@ authors = [
 urls = { "Homepage" = "http://github.com/DrewNow/PhaseFieldsBO" }
 
 dependencies = [
-    "numpy",
-    "GPyOpt",
-    "pandas",
-    "pymatgen",
-    "scikit-learn",
+    "botorch>=0.18.1",
+    "hydra-core>=1.3.7",
+    "matplotlib>=3.11",
+    "numpy>=2.4",
+    "omegaconf>=2.3",
+    "pandas>=3.0",
+    "pydantic>=2.13",
+    "pymatgen>=2026.9.24",
+    "rootutils>=1.0.7",
+    "scipy>=1.17",
+    "torch>=2.14",
 ]
 
-[project.optional-dependencies]
-# If you have e.g., dev or docs extras, you can define them here
-
 [project.scripts]
-phasebo = "phasebo.__main__:run"
+phasebo = "phasebo.__main__:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",
+]
+notebooks = [
+    # 0.25.0 pairs KaTeX 0.18 with KaTeX 0.16 CSS, so sub- and superscripts are not shrunk
+    "marimo>=0.24.2,<0.25",
+    "plotly>=7.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.8,<0.13"]
+build-backend = "uv_build"
+
+# the default Linux torch wheels pull in the CUDA toolkit
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

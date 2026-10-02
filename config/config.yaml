@@ -1,0 +1,25 @@
+# Override on the command line, e.g. phasebo mode=path bo.acquisition=ts
+defaults:
+  - paths: default
+  - system: LiSnSCl           # phase field
+  - mode: suggest
+  - _self_
+  - experiment: null          # preset sweep, e.g. compare_acquisitions
+  - override hydra/output: phasebo
+  - override hydra/job_logging: phasebo
+  - override hydra/help: phasebo
+  - override hydra/callbacks: path_summary
+
+bo:
+  acquisition: qlogei         # or ts (Thompson sampling)
+  batch_size: 4
+  kernel: matern              # Matérn 5/2 as in the paper, or rbf (BoTorch's default)
+seed: null
+show_plots: true              # single runs only; plots are always saved
+
+hydra:
+  job:
+    config:
+      override_dirname:         # paths would nest job dirs
+        exclude_keys: [experiment, show_plots, paths.root_dir, paths.data_dir, paths.output_dir,
+                       paths.multirun_dir, system.inputfile, system.compositionfile, system.excludefile]

@@ -1,0 +1,5 @@
+# PROJECT_ROOT is set by rootutils from the .project-root file
+root_dir: ${oc.env:PROJECT_ROOT}
+data_dir: ${paths.root_dir}/data
+output_dir: ${paths.root_dir}/outputs
+multirun_dir: ${paths.root_dir}/multirun

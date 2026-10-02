@@ -1,0 +1,6 @@
+# BO replayed over the computed compositions
+name: path
+seeds_type: random       # or segmented (deprecated)
+n_seeds: 23
+disect: 3                # sections per axis, segmented seeds
+max_iter: 10

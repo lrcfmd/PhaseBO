@@ -1,0 +1,11 @@
+# @package _global_
+# Summary in <sweep dir>/summary.csv
+defaults:
+  - override /mode: path
+
+hydra:
+  mode: MULTIRUN
+  sweeper:
+    params:
+      bo.acquisition: qlogei,ts
+      seed: range(10)

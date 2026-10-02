@@ -25,7 +25,7 @@ class PhaseField:
                  allow_negative: bool = True,
                  logger: logging.Logger = None):
         self.logger = logger or logging.getLogger(__name__)
-        self.references = list(references[:, 0])
+        self.references = [name.strip() for name in references[:, 0]]
         self.elements = list(ions.keys())
         self.exceptions = exceptions if exceptions else []
 
@@ -144,9 +144,12 @@ class PhaseField:
     def create_dicfc(self):
         """
         Create dictionary using fractional coordinate strings as keys and [energy, composition] as values.
+        A coordinate can be shared, e.g. by one formula in two cell sizes.
         """
         for fc, e, c in zip(self.pd_coords, self.energies, self.compositions):
-            self.dicfc[self.fcsym(fc)] = [e, c]
+            key = self.fcsym(fc)
+            if key not in self.dicfc or e < self.dicfc[key][0]:
+                self.dicfc[key] = [e, c]
 
     def get_candidates(self):
         """
@@ -241,4 +244,4 @@ class PhaseField:
         Function of energy at fractional coordinate x (discrete).
         """
         matches = np.all(self.pd_coords == x, axis=1)
-        return np.dot(np.where(matches, 1, 0), self.energies)
+        return self.energies[matches].min()

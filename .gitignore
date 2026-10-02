@@ -9,3 +9,10 @@ TODO
 _input.py
 LiSiSF_xtalopt.csv
 lisisf_input.py
+.venv/
+.pytest_cache/
+dist/
+__marimo__/
+.claude/worktrees/
+outputs/
+multirun/
